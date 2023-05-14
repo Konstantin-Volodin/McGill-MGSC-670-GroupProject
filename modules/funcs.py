@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import itertools
 
 
 def clean_up_relevant_data(df):
@@ -36,6 +37,18 @@ def clean_up_relevant_data(df):
 
     return (DF_DIST, DF_TRN)
 
+def get_price_dependency(df_dist):
+    prices = df_dist.columns.to_list()
+    prices.sort(reverse = True)
+    combos = list(itertools.combinations(prices, 2))
+
+    mean_dependency = {}
+    sd_dependency = {}
+    for i, j in combos:
+        mean_dependency[(i, j)] = df_dist.loc['mean_mean', j]/df_dist.loc['mean_mean', i]
+        sd_dependency[(i, j)] = df_dist.loc['sd_mean', j]/df_dist.loc['sd_mean', i]
+    
+    return (mean_dependency, sd_dependency)
 
 def simulator(problem_dat, distr, policy, **kwargs):
     curr_price = problem_dat['start_price']
