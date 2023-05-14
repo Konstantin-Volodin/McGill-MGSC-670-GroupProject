@@ -7,12 +7,27 @@ def baseline_policy(problem_dat, actions, sales, prices, **kwargs):
     return (curr_price)
 
 
-def decrease_policy(problem_dat, actions, sales, prices, **kwargs):
+def moving_avg_policy(problem_dat, actions, sales, prices, **kwargs):
+
+    # Get Price Relevant Data
     curr_price = prices[-1]
-    if curr_price == 36:
-        return (actions[curr_price][0])
-    else:
+    curr_week = len(sales) + 1
+
+    # No change for the first N rounds
+    N = kwargs['kwargs']['num_observation']
+    if curr_week <= N:
+        return curr_price
+    
+    sales_pred = sales.copy()
+    for i in range(curr_week, problem_dat['total_duration']):
+        new_demand = np.round(sum(sales_pred[i-3:i])/3)
+        left_over = problem_dat['start_inventory'] - sum(sales_pred)
+        sales_pred.append(min(new_demand, left_over))
+
+    if sum(sales_pred) < problem_dat['start_inventory'] and curr_price != 36:
         return (actions[curr_price][1])
+    else:
+        return (actions[curr_price][0])
 
 
 def likelihood_naive(problem_dat, actions, sales, prices, **kwargs):

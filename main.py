@@ -8,7 +8,7 @@ from tqdm import tqdm
 from modules.funcs import (simulator,
                            clean_up_relevant_data)
 from modules.policies import (baseline_policy,
-                              decrease_policy,
+                              moving_avg_policy,
                               likelihood_naive,)
 
 # PREPARE DATA
@@ -29,7 +29,8 @@ distributions = {opt: {'mean': max(npr.normal(DF_DIST[opt]['mean_mean'],
                                               DF_DIST[opt]['mean_sd']), 0),
                        'sd': max(npr.normal(DF_DIST[opt]['sd_mean'],
                                             DF_DIST[opt]['sd_sd']), 0)} for opt in OPTIONS}
-ind_res = simulator(PROB_DATA, distributions, likelihood_naive, kwargs={'req_likelihood': 0.5})
+#ind_res = simulator(PROB_DATA, distributions, likelihood_naive, kwargs={'req_likelihood': 0.5})
+ind_res = simulator(PROB_DATA, distributions, moving_avg_policy, kwargs={'num_observation': 5})
 ind_res
 
 # %% 100 simulations
@@ -49,18 +50,20 @@ for i in tqdm(range(500)):
     res['sales'].extend(ind_res[1])
     res['price'].extend(ind_res[2])
 
-    # ALWAYS DECREASE POLICY
-    ind_res = simulator(PROB_DATA, distributions, decrease_policy, kwargs={})
-    res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
-    res['policy'].extend(['always_decrease' for j in range(PROB_DATA['total_duration'])])
-    res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
-    res['week'].extend(ind_res[0])
-    res['sales'].extend(ind_res[1])
-    res['price'].extend(ind_res[2])
+    # MOVING AVERAGE POLICY
+    NUM_OBSERVATION_OPTIONS = np.linspace(3,15,13)
+    for NUM_OBSERVATION in NUM_OBSERVATION_OPTIONS:
+        ind_res = simulator(PROB_DATA, distributions, moving_avg_policy, kwargs={'num_observation': NUM_OBSERVATION})
+        res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
+        res['policy'].extend(['moving_avg' for j in range(PROB_DATA['total_duration'])])
+        res['param'].extend([NUM_OBSERVATION for j in range(PROB_DATA['total_duration'])])
+        res['week'].extend(ind_res[0])
+        res['sales'].extend(ind_res[1])
+        res['price'].extend(ind_res[2])
 
+    # NAIVE LIKELIHOOD POLICY
     LIKELIHOOD_ESTIMATOR_PROB_OPTIONS = np.linspace(0,1,101)
     for LIKELIHOOD_ESTIMATOR_PROB in LIKELIHOOD_ESTIMATOR_PROB_OPTIONS:
-        # NAIVE LIKELIHOOD
         ind_res = simulator(PROB_DATA, distributions, likelihood_naive, kwargs={'req_likelihood': LIKELIHOOD_ESTIMATOR_PROB})
         res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
         res['policy'].extend(['likelihood' for j in range(PROB_DATA['total_duration'])])
@@ -77,18 +80,19 @@ res_agg = res.groupby(['policy', 'param', 'repl']).agg({'revenue': 'sum'}).reset
 res_agg = res_agg.groupby(['policy', 'param']).agg({'revenue': ['mean', 'std']}).reset_index()
 res_agg.columns = ['policy', 'param', 'revenue_mean', 'revenue_sd']
 res_agg.sort_values('revenue_mean')
+#res_agg[res_agg.policy == "moving_avg"].sort_values('revenue_mean')
 
 # %% Plot evolutions
 res_baseline = res.query(f'policy == "baseline"')
 res_baseline['cum_revenue'] = res_baseline.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_decrease = res.query(f'policy == "always_decrease"')
-res_decrease['cum_revenue'] = res_decrease.groupby('repl')['revenue'].transform(pd.Series.cumsum)
+res_moving_avg = res.query(f'policy == "moving_avg" and param == 5')
+res_moving_avg['cum_revenue'] = res_moving_avg.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_likelihood = res.query(f'policy == "likelihood" and param == 0.03')
 res_likelihood['cum_revenue'] = res_likelihood.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_all = pd.concat([res_baseline, res_decrease, res_likelihood])
+res_all = pd.concat([res_baseline, res_moving_avg, res_likelihood])
 
 # Simulations
 fig = px.line(res_all, x='week', y='cum_revenue', color='policy',
