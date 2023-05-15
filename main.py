@@ -6,9 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import plotly.io as pio
-# import kaleido
 from tqdm import tqdm
-# import kaleido
 
 from modules.funcs import (simulator,
                            clean_up_relevant_data,
@@ -33,14 +31,11 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_inventory': 2000,
              'start_price': 60,
              'total_duration': 15}
-# with open('data/q_policy.npy', 'rb') as file:
-#     RL_POL = np.load(file)
 
 
-# %% SIMULATION
+# %% 
+# SIMULATION
 res = {'repl': [], 'week': [], 'sales': [], 'price': [], 'policy': [], 'param': []}
-
-# Simulation
 for i in tqdm(range(100)):
     distributions = {60: {'mean': max(npr.normal(DF_DIST[60]['mean_mean'],
                                                  DF_DIST[60]['mean_sd']), 0),
@@ -188,31 +183,31 @@ res_all_agg_versus = res_all.\
     agg({'price': 'mean', 'sales': 'mean'}).\
     reset_index()
 fig = px.bar(res_all_agg_versus, x='week', y='sales', color='policy',
-              facet_col='policy', facet_col_wrap=3, )
-fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "baseline"').week, 
-                         y=res_all_agg_versus.query(f'policy == "baseline"').price, 
-                         name = 'price_baseline',
-                         mode='lines'), row = 2, col = 1)
-fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_naive"').week, 
-                         y=res_all_agg_versus.query(f'policy == "likelihood_naive"').price, 
-                         name = 'price_likelihood_naive',
-                         mode='lines'), row = 2, col = 2)
-fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_price"').week, 
-                         y=res_all_agg_versus.query(f'policy == "likelihood_price"').price, 
-                         name = 'price_likelihood_price',
-                         mode='lines'), row = 2, col = 3)
-fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_longterm"').week, 
+             facet_col='policy', facet_col_wrap=3, )
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "baseline"').week,
+                         y=res_all_agg_versus.query(f'policy == "baseline"').price,
+                         name='price_baseline',
+                         mode='lines'), row=2, col=1)
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_naive"').week,
+                         y=res_all_agg_versus.query(f'policy == "likelihood_naive"').price,
+                         name='price_likelihood_naive',
+                         mode='lines'), row=2, col=2)
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_price"').week,
+                         y=res_all_agg_versus.query(f'policy == "likelihood_price"').price,
+                         name='price_likelihood_price',
+                         mode='lines'), row=2, col=3)
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_longterm"').week,
                          y=res_all_agg_versus.query(f'policy == "moving_avg_longterm"').price,
-                         name = 'price_moving_avg_longterm',
-                         mode='lines'), row = 1, col = 1)
-fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_shorterm"').week, 
+                         name='price_moving_avg_longterm',
+                         mode='lines'), row=1, col=1)
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_shorterm"').week,
                          y=res_all_agg_versus.query(f'policy == "moving_avg_shorterm"').price,
-                         name = 'price_moving_avg_shorterm',
-                         mode='lines'), row = 1, col = 2)
-fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "random"').week, 
+                         name='price_moving_avg_shorterm',
+                         mode='lines'), row=1, col=2)
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "random"').week,
                          y=res_all_agg_versus.query(f'policy == "random"').price,
-                         name = 'price_random',
-                         mode='lines'), row = 1, col = 3)
+                         name='price_random',
+                         mode='lines'), row=1, col=3)
 
 fig.show(renderer='browser')
 pio.write_image(fig, 'images/prices_versus_sales.png', scale=1, width=1500, height=900)
@@ -235,6 +230,6 @@ fig.show(renderer='browser')
 pio.write_image(fig, 'images/revenue_distribution_box.png', scale=1, width=1500, height=900)
 
 # Revenue Distribution - Table
-res_rev_all.groupby(['policy']).agg({'revenue': ['mean', 'std']}).sort_values(by=('revenue','mean'), ascending=False).reset_index()
+res_rev_all.groupby(['policy']).agg({'revenue': ['mean', 'std']}).sort_values(by=('revenue', 'mean'), ascending=False).reset_index()
 
 # %%
