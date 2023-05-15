@@ -5,6 +5,8 @@ import numpy.random as npr
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
+import plotly.io as pio
+import kaleido
 from tqdm import tqdm
 import kaleido
 
@@ -162,7 +164,7 @@ fig = px.line(res_all, x='week', y='cum_revenue', color='policy',
               facet_col='policy', facet_col_wrap=3,)
 fig.update_traces(opacity=0.05)
 fig.show(renderer='browser')
-# fig.write_image('images/simulation_results.png')
+pio.write_image(fig, 'images/simulation_results.png', scale=1, width=1200, height=900)
 
 
 # Aggregate
@@ -173,7 +175,7 @@ res_all_agg = res_all.\
 
 fig = px.line(res_all_agg, x='week', y='cum_revenue', color='policy',)
 fig.show(renderer='browser')
-# fig.write_image('images/revenue_aggregation.png')
+pio.write_image(fig, 'images/revenue_aggregation.png', scale=1, width=1200, height=900)
 
 
 # Prices versus Sales
@@ -205,8 +207,7 @@ fig = px.bar(res_all_agg_versus, x='week', y='sales', color='policy',
 #                          mode='lines'), row = 1, col = 1)
 
 fig.show(renderer='browser')
-# fig.write_image('images/prices_versus_sales.png')
-
+pio.write_image(fig, 'images/prices_versus_sales.png', scale=1, width=1200, height=900)
 
 # Revenue Distribution - Hist and Rug
 res_rev_all = res_all.groupby(['repl','policy']).agg({'revenue': 'sum'}).reset_index()
@@ -224,6 +225,7 @@ fig.show(renderer='browser')
 fig = px.box(res_rev_all, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-# fig.write_image('images/revenue_distribution_box.png')
+pio.write_image(fig, 'images/revenue_distribution_box.png', scale=1, width=1200, height=900)
+
 
 # %%
