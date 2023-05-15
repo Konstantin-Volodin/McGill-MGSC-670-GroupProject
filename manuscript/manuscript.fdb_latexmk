@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex manuscript"] 1684121346 "manuscript.aux" "manuscript.bbl" "manuscript" 1684121509
+["bibtex manuscript"] 1684122376 "manuscript.aux" "manuscript.bbl" "manuscript" 1684122376
   "/usr/local/texlive/2022/texmf-dist/bibtex/bst/base/apalike.bst" 1292289607 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "manuscript.aux" 1684121509 2876 c3dccaf6a3786cfcb034cae9fe98136d "pdflatex"
+  "manuscript.aux" 1684122376 2876 c3dccaf6a3786cfcb034cae9fe98136d "pdflatex"
   "ref.bib" 1684119896 1039 f7e4b2823671c1bc49fa293d39bca92b ""
   (generated)
   "manuscript.bbl"
   "manuscript.blg"
-["pdflatex"] 1684121509 "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" "manuscript.pdf" "manuscript" 1684121509
-  "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" 1684121509 9677 4225f2a676c8a99671741258561c7d55 ""
+["pdflatex"] 1684122376 "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" "manuscript.pdf" "manuscript" 1684122376
+  "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" 1684122375 9715 51d0e52d548dada903d170df7893d6b1 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1136768653 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -34,7 +34,6 @@
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1248133631 32080 340ef9bf63678554ee606688e7b5339d ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1248133631 32722 d7379af29a190c3f453aba36302ff5a9 ""
-  "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1248133631 32362 179c33bbf43f19adbb3825bb4e36e57a ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb" 1248133631 37944 359e864bd06cde3b1cf57bb20757fb06 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb" 1248133631 36118 fad905eba93cff5bce1e185fe980a177 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb" 1215737283 145929 f25e56369a345c4ff583b067cd87ce8e ""
@@ -96,11 +95,11 @@
   "/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1647878959 4410336 7d30a02e9fa9a16d7d1f8d037ba69641 ""
   "/usr/local/texlive/2022/texmf-var/web2c/pdftex/pdflatex.fmt" 1659809088 2826433 923beec1f9aae17873bf44a1e728bc26 ""
   "/usr/local/texlive/2022/texmf.cnf" 1647878952 577 209b46be99c9075fd74d4c0369380e8c ""
-  "manuscript.aux" 1684121509 2876 c3dccaf6a3786cfcb034cae9fe98136d "pdflatex"
-  "manuscript.bbl" 1684121346 855 9a8be9e3f3ca2e4985f99fe443b4c1af "bibtex manuscript"
-  "manuscript.out" 1684121509 2077 4926c3789aba915d41a0ee663c380e56 "pdflatex"
-  "manuscript.tex" 1684121509 9677 4225f2a676c8a99671741258561c7d55 ""
-  "manuscript.toc" 1684121509 1070 425e8c13f23188c8362602e07af49df3 "pdflatex"
+  "manuscript.aux" 1684122376 2876 c3dccaf6a3786cfcb034cae9fe98136d "pdflatex"
+  "manuscript.bbl" 1684122376 855 9a8be9e3f3ca2e4985f99fe443b4c1af "bibtex manuscript"
+  "manuscript.out" 1684122376 2077 4926c3789aba915d41a0ee663c380e56 "pdflatex"
+  "manuscript.tex" 1684122375 9715 51d0e52d548dada903d170df7893d6b1 ""
+  "manuscript.toc" 1684122376 1070 425e8c13f23188c8362602e07af49df3 "pdflatex"
   "pic/Picture1.png" 1684120141 28082 6a3733631f9b509512d9c0499e39b57f ""
   (generated)
   "manuscript.aux"
