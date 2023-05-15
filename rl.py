@@ -3,15 +3,12 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from tqdm import tqdm
-import pickle
+from modules.funcs import clean_up_relevant_data
 
-from modules.funcs import (simulator,
-                           clean_up_relevant_data)
-from modules.policies import (baseline_policy,
-                              moving_avg_policy,
-                              likelihood_naive,
-                              random_policy)
-
+import sklearn.pipeline
+import sklearn.preprocessing
+from sklearn.linear_model import SGDRegressor
+from sklearn.kernel_approximation import RBFSampler
 
 import gymnasium as gym
 from gymnasium import spaces
@@ -29,7 +26,6 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'total_duration': 15}
 
 
-
 class MarkdownEnv(gym.Env):
 
     def __init__(self, problem_dat):
@@ -42,10 +38,10 @@ class MarkdownEnv(gym.Env):
 
         # State Space
         self.state_space = spaces.Dict({
-            "week": spaces.Discrete(self.tot_dur), 
             "curr_price": spaces.Discrete(4),
             "curr_sales": spaces.Discrete(300), 
-            "tot_sales": spaces.Discrete(self.start_inv+1)
+            "tot_sales": spaces.Discrete(self.start_inv+1),
+            "week": spaces.Discrete(self.tot_dur), 
         })
 
         # Action Space
@@ -57,10 +53,10 @@ class MarkdownEnv(gym.Env):
         
     def _get_state(self):
         return {
-            'week': self.week,
             'curr_price': self.curr_price,
             'curr_sales': self.sales,
-            'tot_sales': self.tot_sales
+            'tot_sales': self.tot_sales,
+            'week': self.week,
         }
 
     def reset(self, seed=None):
@@ -134,58 +130,235 @@ class MarkdownEnv(gym.Env):
         return state, reward, terminated, False
 
 
-# %% Reinforcement Learning
-# Prepare Environment
-env = MarkdownEnv(PROB_DATA)
-q_table = np.zeros([
-    env.state_space['week'].n,
-    env.state_space['curr_price'].n,
-    env.state_space['curr_sales'].n,
-    env.state_space['tot_sales'].n,
-    env.action_space.n
-])
-expl = 0.2
-upd = 0.1
+class QL_est():
+    """Quantization Estimation"""
+    def __init__(self, env, quantizer):
+        self.quantizer = quantizer
+        self.q_val = np.zeros([env.state_space['curr_price'].n,
+                               self.quantizer.n_bins,
+                               self.quantizer.n_bins,
+                               env.state_space['week'].n,
+                               env.action_space.n])
+        
+    def quantize_state(self, state):
+        """ Converts a state to quantized data """
+        state = np.array(list(state.values()))
+        state[1:3] = quantizer.transform([state[1:3]])[0]
+        return(state)
 
-# Q Learning
+            
+    def update(self, s, a, r, sp, upd, disc):
+        """ Updates the policy table """
+        s_q = self.quantize_state(s).to_dict('records')[0]
+        sp_q = self.quantize_state(sp).to_dict('records')[0]
+
+        # Gets Values
+        old_est = self.q_val[
+            s_q['week'], s_q['curr_price'], int(s_q['curr_sales']), int(s_q['tot_sales']), a
+        ]
+        next_est = np.max(self.q_val[
+            sp_q['week'], sp_q['curr_price'], int(sp_q['curr_sales']), int(sp_q['tot_sales'])
+        ])
+
+        # Updates
+        self.q_val[
+            s_q['week'], s_q['curr_price'], 
+            int(s_q['curr_sales']), int(s_q['tot_sales']), a
+        ] = ((1-upd) * old_est) + (upd * (r + (disc * next_est) - old_est))
+
+
+    def get_action(self, state):
+        """ Gets the action of the estimator """
+        state_q = self.quantize_state(state).to_dict('records')[0]
+        action = np.argmax(self.q_val[state_q['week'],
+                                       state_q['curr_price'],
+                                       int(state_q['curr_sales']),
+                                       int(state_q['tot_sales']),])
+        return action
+        
+
+class QL_func_estimator():
+    """Value Function Linear Approximator"""
+    
+    def __init__(self):
+        self.models = []
+        for _ in range(env.action_space.n):
+            model = SGDRegressor(learning_rate="constant")
+            model.partial_fit([self.featurize_state(env.reset())], [0])
+            self.models.append(model)
+    
+    def featurize_state(self, state):
+        state = list(state.values())
+        scaled = scaler.transform([state])
+        featurized = featurizer.transform(scaled)
+        return featurized[0]
+    
+    def predict(self, s, a=None):
+        """
+        Makes value function predictions.
+        
+        Args:
+            s: state to make a prediction for
+            a: (Optional) action to make a prediction for
+            
+        Returns
+            If an action a is given this returns a single number as the prediction.
+            If no action is given this returns a vector or predictions for all actions
+            in the environment where pred[i] is the prediction for action i.
+            
+        """
+        if a is not None:
+            prediction = self.models[a].predict([self.featurize_state(s)])
+            return prediction[0]
+        
+        else:
+            predictions = np.array([self.models[i].predict([self.featurize_state(s)]) for i in range(env.action_space.n)])
+            return predictions.reshape(-1)
+            
+    def update(self, s, a, y):
+        """
+        Updates the estimator parameters for a given state and action towards
+        the target y.
+        """
+        self.models[a].partial_fit([self.featurize_state(s)], [y])
+
+    def get_action(self, observation):
+        """
+        Returns the best action given the current policy value
+        """
+        q_values = self.predict(observation)
+        best_action = np.argmax(q_values)
+        return best_action
+
+
+# %% Reinforcement Learning
+##### NAIVE Q LEARNING #####
+# Setup
+env = MarkdownEnv(PROB_DATA)
+
+# Prepare Transformation Pipelines
+sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
+# sample_vals = pd.DataFrame(sample_vals, columns=env.state_space.sample().keys())
+quantizer = sklearn.preprocessing.KBinsDiscretizer(n_bins = 15, encode='ordinal')
+quantizer.fit(sample_vals[:,1:3])
+
+
+# Policy Estimator
+nv_est = QL_est(env, quantizer)
+
+
+state = env.reset()
+nv_est.quantize_state(state)
+
+#%%
+
+# Optimization
 rewards = []
-for i in tqdm(range(5000000)):
+exp = 0.1
+disc = 0.95
+upd = 0.1
+epochs = 500
+for i in tqdm(range(epochs)):
+
     state = env.reset()
     terminated = False
 
     while not terminated:
-        if np.random.uniform(0,1) < expl:
-            action = env.action_space.sample()
-        else:
-            action = np.argmax(q_table[(state['week'],
-                                        state['curr_price'],
-                                        state['curr_sales'],
-                                        state['tot_sales'],)])
-            
-        # PREVIOUS VALUE
-        old_estimate = q_table[state['week'], state['curr_price'], state['curr_sales'], state['tot_sales'],action]
 
-        # GET NEW VALUE ESTIMATE
-        new_state, reward, terminated, truncated  = env.step(action) 
-        next_estimate = np.max(q_table[(new_state['week'],new_state['curr_price'], 
-                                        new_state['curr_sales'], new_state['tot_sales'],)])
-        new_estimate = ((1-upd) * old_estimate) + (upd * (reward + next_estimate - old_estimate))
-        q_table[(state['week'], state['curr_price'], 
-                 state['curr_sales'], state['tot_sales'], action)] = new_estimate
+        # Exploration
+        if np.random.uniform(0,1) < exp:
+            action = env.action_space.sample()
+        # Exploitation
+        else:
+            action = nv_est.get_action(state)
+
+        # Updates Policy
+        new_state, reward, terminated, _ = env.step(action)
+        nv_est.update(state, action, reward, new_state, upd, disc)
 
         # Update State
         state = new_state
 
     rewards.append(reward)
 
-print(np.count_nonzero(q_table))
+# #%%
+# print(np.count_nonzero(nv_est.q_val))
+# fig = px.line(rewards)
+# fig.update_traces(line={'width': 1})
+# fig.show(renderer='browser')
 
-with open('data/q_policy.npy', 'wb') as file:
-    np.save(file, q_table) 
+#  #%%
+# ##### APPROXIMATION Q LEARNING #####
+# # Setup
+# env = MarkdownEnv(PROB_DATA)
+# observation_examples = np.array([list(env.state_space.sample().values()) for x in range(10000)])
+# scaler = sklearn.preprocessing.StandardScaler()
+# scaler.fit(pd.DataFrame.from_records(observation_examples))
+# featurizer = sklearn.pipeline.FeatureUnion([
+#         ("rbf1", RBFSampler(gamma=5.0, n_components=100)),
+#         ("rbf2", RBFSampler(gamma=2.0, n_components=100)),
+#         ("rbf3", RBFSampler(gamma=1.0, n_components=100)),
+#         ("rbf4", RBFSampler(gamma=0.5, n_components=100))])
+# featurizer.fit(scaler.transform(pd.DataFrame.from_records(observation_examples)))
+# estimator = QL_func_estimator()
+# policy = qlearn_policy(estimator)
 
-#%%
-fig = px.line(rewards)
-fig.update_traces(line={'width': 0.01})
-fig.show(renderer='browser')
+# # Optimization
+# rewards = []
+# exploration = 0.2
+# discount_factor = 1
+# epochs = 100000
+# for i in tqdm(range(10000)):
 
-# %% 
+#     policy = qlearn_policy(estimator)
+#     state = env.reset()
+#     terminated = False
+
+#     while not terminated:
+
+#         # Exploration
+#         if np.random.uniform(0,1) < exploration:
+#             action = env.action_space.sample()
+#         # Exploitation
+#         else:
+#             # action = np.argmax(q_table[(state['week'],
+#             #                             state['curr_price'],
+#             #                             state['curr_sales'],
+#             #                             state['tot_sales'],)])
+#             action = policy(state)
+
+#         # Perform the action -> Get the reward and observe the next state
+#         new_state, reward, terminated, _ = env.step(action)
+#         q_values_new_state = estimator.predict(new_state)
+#         td_target = reward + discount_factor * np.max(q_values_new_state)
+#         estimator.update(state, action, td_target)           
+
+#         # PREVIOUS VALUE
+#         # old_estimate = q_table[state['week'], state['curr_price'], state['curr_sales'], state['tot_sales'],action]
+
+#         # # GET NEW VALUE ESTIMATE
+#         # new_state, reward, terminated, truncated  = env.step(action) 
+#         # next_estimate = np.max(q_table[(new_state['week'],new_state['curr_price'], 
+#         #                                 new_state['curr_sales'], new_state['tot_sales'],)])
+#         # new_estimate = ((1-upd) * old_estimate) + (upd * (reward + next_estimate - old_estimate))
+#         # q_table[(state['week'], state['curr_price'], 
+#         #         state['curr_sales'], state['tot_sales'], action)] = new_estimate
+
+#         # Update State
+#         state = new_state
+
+#             # Y['value'].append(reward)
+
+#     rewards.append(reward)
+
+# print(np.count_nonzero(q_table))
+
+# with open('data/q_policy.npy', 'wb') as file:
+#     np.save(file, q_table) 
+
+# #%%
+# fig = px.line(rewards)
+# fig.update_traces(line={'width': 0.1})
+# fig.show(renderer='browser')
+
+# # %% 
