@@ -7,6 +7,7 @@
 \usepackage{fancyhdr}
 \usepackage[nottoc,numbib]{tocbibind}
 \usepackage{indentfirst}
+\usepackage{algpseudocode}
 
 \pagestyle{fancy}
 \setlength{\headheight}{14pt}
@@ -161,7 +162,34 @@ Since we cannot access the exact equation or similar random number generator use
 The model built takes the policy, the average and the standard deviation of the observed price points and generates 100 simulations. 
 For each simulation and each time t, the model generates unit sales based on a numpy random normal method using the mean and standard deviation of the current price point. 
 The simulation approach best reflects a real-life scenario as a forecast function is generally unknown, resulting in a reliance on past data to predict future demand. 
-The generated numbers reflect the data distribution found within the historical data. 
+The generated numbers reflect the data distribution found within the historical data. \\
+
+\begin{itemize}[leftmargin=*]
+    \item Pseudo Code of Simulation Approach and Validation
+\end{itemize}
+
+\begin{algorithmic}[1]
+    \Procedure{Simulate}{$means\ per\ price,\ stdev\ per\ price$}
+        \For{week in length($means\ per\ price$)}
+            \State \textbf{generate} unit sales \textbf{with} mean, stdev
+        \EndFor
+        \State \textbf{return} unit sales
+    \EndProcedure
+    \State 
+    \Procedure{Test Policy}{$policy,\ list\ of\ unit\ sales$}
+        \For{t = 1 to 15}
+            \State \textbf{generate} price at week t+1 from $policy$ logic
+        \EndFor
+        \State \textbf{return} price at week t+1
+    \EndProcedure
+    \State
+    \For{policy in policy candidate list}
+        \For{t = 1 to 100}
+            \State list of unit sales = $Simulate$ (price mean, price stdev) 
+            \State policy results = $Test\ Policy$ (policy, list of unit sales) 
+        \EndFor
+    \EndFor
+\end{algorithmic}
 
 \subsection{Validation}
 The simulation approach helps validate the models and quickly select the best policy with limited information. 
@@ -170,7 +198,27 @@ The assumptions and approach we have previously laid out may have unknown challe
 In this scenario we are not limited to the simulation and approximation of “real world data”. 
 We will therefore validate the simulation results using the web application. 
 To implement the validation, we will utilize a selenium-based python script which goes between the code and user interface on the web app. 
-Each policy is tested in real-time against the app while recording the results to evaluate after the fact. 
+Each policy is tested in real-time against the app while recording the results to evaluate after the fact. \\
+
+\begin{itemize}[leftmargin=*]
+    \item Pseudo Code of Policy Validation using WebApp
+\end{itemize}
+
+\begin{algorithmic}[1]
+    \Procedure{Policy Validate}{$policy$}
+        \State URL = "http://www.randhawa.us/games/retailer/nyu.html"
+        \State expected return = \textbf{with} URL \textbf{use} $policy$ for t+1 decision
+        \State \textbf{return} expected return
+    \EndProcedure
+    \State
+    \For{policy in policy candidate list}
+        \For{t = 1 to 100}
+            \State policy results = $Policy\ Validate$ (policy) 
+        \EndFor
+    \EndFor
+    \State \textbf{plot} policy results
+\end{algorithmic}
+\pagebreak
 
 \section{Discussion and Recommendations}
 
