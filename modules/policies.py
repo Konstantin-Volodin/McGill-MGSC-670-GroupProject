@@ -8,7 +8,7 @@ def baseline_policy(problem_dat, actions, sales, prices, **kwargs):
     return (curr_price)
 
 
-def moving_avg_policy(problem_dat, actions, sales, prices, **kwargs):
+def moving_avg_longterm(problem_dat, actions, sales, prices, **kwargs):
 
     # Get Price Relevant Data
     curr_price = prices[-1]
@@ -26,6 +26,31 @@ def moving_avg_policy(problem_dat, actions, sales, prices, **kwargs):
         sales_pred.append(min(new_demand, left_over))
 
     if sum(sales_pred) < problem_dat['start_inventory'] and curr_price != 36:
+        return (actions[curr_price][1])
+    else:
+        return (actions[curr_price][0])
+
+def moving_avg_shorterm(problem_dat, actions, sales, prices, **kwargs):
+
+    # Get Price Relevant Data
+    curr_price = prices[-1]
+    curr_week = len(sales) + 1
+
+    # No change for the first N rounds
+    N = kwargs['kwargs']['num_observation']
+    if curr_week <= N:
+        return curr_price
+    
+    indexes = np.where(np.array(prices) == curr_price)[0]
+    # If need to gather more data
+    if len(indexes) < 3:
+        return (curr_price)
+
+    new_demand = np.round(sum(sales[curr_week-3:curr_week])/3)
+    left_over_inv = problem_dat['start_inventory'] - sum(sales)
+    daily_req = left_over_inv/(problem_dat['total_duration']-len(sales))
+
+    if new_demand < daily_req and curr_price != 36:
         return (actions[curr_price][1])
     else:
         return (actions[curr_price][0])
