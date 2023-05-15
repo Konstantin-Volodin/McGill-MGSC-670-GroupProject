@@ -141,8 +141,36 @@ However, we also expect that this model will result in the highest average reven
 \section{Implementation}
 
 \subsection{Data Treatment}
+While we have access to 15 runs of “historical” data, before using this data, we must apply data preprocessing. 
+
+First, we must ensure that the data does not contain errors or null values. 
+We, therefore, removed null rows and appended the run number (1-15) to each observation within the data. 
+After the data cleanup, we are left with a dataset containing the run number, the week number, the price of the item (\$60, \$54, \$48, \$36), the unit demand and the revenue generated from that week of sales. 
+
+Second, we need to transform the data into more meaningful formats. 
+We grouped the data by price to measure unit sales’ standard deviation and mean. 
+This first grouping was helpful in the naïve price policy we applied. 
+We also grouped the data by price to measure the mean and standard deviation of the unit sales compared to the previous week. 
+In other words, what is the \% increase (or decrease) in unit sales when a new price point is set. It may be that a 20\% decrease in price increases unit sales by 70\%, independent of the previous price point. 
+
+Based on some casual observations of the data, the distributions appear roughly normally distributed, we will use this as a basis for simulation and modelling. 
 
 \subsection{Simulation}
+To forecast the impact of the pricing strategies we are investigating, we must test the policies against data. 
+Since we cannot access the exact equation or similar random number generator used for the web app, we must first utilize simulations. 
+The model built takes the policy, the average and the standard deviation of the observed price points and generates 100 simulations. 
+For each simulation and each time t, the model generates unit sales based on a numpy random normal method using the mean and standard deviation of the current price point. 
+The simulation approach best reflects a real-life scenario as a forecast function is generally unknown, resulting in a reliance on past data to predict future demand. 
+The generated numbers reflect the data distribution found within the historical data. 
+
+\subsection{Validation}
+The simulation approach helps validate the models and quickly select the best policy with limited information. 
+However, for this context, we need not rely solely on the simulation data, we can instead use the actual data from the web app. 
+The assumptions and approach we have previously laid out may have unknown challenges or other pitfalls. 
+In this scenario we are not limited to the simulation and approximation of “real world data”. 
+We will therefore validate the simulation results using the web application. 
+To implement the validation, we will utilize a selenium-based python script which goes between the code and user interface on the web app. 
+Each policy is tested in real-time against the app while recording the results to evaluate after the fact. 
 
 \section{Discussion and Recommendations}
 
