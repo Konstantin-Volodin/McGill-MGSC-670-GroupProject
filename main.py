@@ -33,7 +33,7 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'total_duration': 15}
 
 
-# %% 
+# %%
 # SIMULATION
 res = {'repl': [], 'week': [], 'sales': [], 'price': [], 'policy': [], 'param': []}
 for i in tqdm(range(100)):

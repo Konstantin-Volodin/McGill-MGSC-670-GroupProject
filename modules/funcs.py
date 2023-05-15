@@ -114,27 +114,25 @@ def validator(problem_dat, seed, policy, **kwargs):
             hist_prices.append(int(vals[1]))
             hist_weeks.append(int(vals[0]))
 
+        # End
+        if hist_weeks[-1] == 15:
+            break
+
         # Generate Action
         action = policy(problem_dat, actions, hist_sales, hist_prices, kwargs=kwargs['kwargs'])
 
         # Execute Action
         previous_price = hist_prices[-1]
+
         if action == previous_price:
             button = driver.find_element(By.ID, "maintainButton")
-            button.click()
-        elif action == 56:
+        elif action == 54:
             button = driver.find_element(By.ID, "tenButton")
-            button.click()
         elif action == 48:
             button = driver.find_element(By.ID, "twentyButton")
-            button.click()
-        else:
+        elif action == 36:
             button = driver.find_element(By.ID, "fortyButton")
-            button.click()
-
-        # End
-        if hist_weeks[-1] == 15:
-            break
+        button.click()
 
     # Save Data
     tot_rev = int(driver.find_element(By.ID, 'rev').text[1:].replace(',', ''))
