@@ -6,9 +6,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import plotly.io as pio
-import kaleido
+# import kaleido
 from tqdm import tqdm
-import kaleido
+# import kaleido
 
 from modules.funcs import (simulator,
                            clean_up_relevant_data,
@@ -33,8 +33,8 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_inventory': 2000,
              'start_price': 60,
              'total_duration': 15}
-with open('data/q_policy.npy', 'rb') as file: 
-    RL_POL = np.load(file) 
+# with open('data/q_policy.npy', 'rb') as file:
+#     RL_POL = np.load(file)
 
 
 # %% SIMULATION
@@ -42,15 +42,19 @@ res = {'repl': [], 'week': [], 'sales': [], 'price': [], 'policy': [], 'param': 
 
 # Simulation
 for i in tqdm(range(100)):
-    distributions = {opt: {'mean': max(npr.normal(DF_DIST[opt]['mean_mean'],
-                                                  DF_DIST[opt]['mean_sd']), 0),
-                           'sd': max(npr.normal(DF_DIST[opt]['sd_mean'],
-                                                DF_DIST[opt]['sd_sd']), 0)} for opt in OPTIONS}
+    distributions = {60: {'mean': max(npr.normal(DF_DIST[60]['mean_mean'],
+                                                 DF_DIST[60]['mean_sd']), 0),
+                          'sd': max(npr.normal(DF_DIST[60]['sd_mean'],
+                                               DF_DIST[60]['sd_sd']), 0)}}
+
+    for opt in OPTIONS[1:]:
+        distributions[opt] = {'mean': distributions[60]['mean'] * MEAN_DEPENDENCY[(60, opt)],
+                              'sd': distributions[60]['sd'] * SD_DEPENDENCY[(60, opt)], }
 
     # BASELINE POLICY
     ind_res = simulator(PROB_DATA, distributions, baseline_policy, kwargs={})
     res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
-    res['policy'].extend(['random' for j in range(PROB_DATA['total_duration'])])
+    res['policy'].extend(['baseline' for j in range(PROB_DATA['total_duration'])])
     res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
     res['week'].extend(ind_res[0])
     res['sales'].extend(ind_res[1])
@@ -59,14 +63,14 @@ for i in tqdm(range(100)):
     # RANDOM POLICY
     ind_res = simulator(PROB_DATA, distributions, random_policy, kwargs={})
     res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
-    res['policy'].extend(['baseline' for j in range(PROB_DATA['total_duration'])])
+    res['policy'].extend(['random' for j in range(PROB_DATA['total_duration'])])
     res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
     res['week'].extend(ind_res[0])
     res['sales'].extend(ind_res[1])
     res['price'].extend(ind_res[2])
 
     # MOVING AVERAGE LONGTERM POLICY
-    NUM_OBSERVATION_OPTIONS = np.linspace(3,15,13)
+    NUM_OBSERVATION_OPTIONS = np.linspace(3, 15, 13)
     for NUM_OBSERVATION in NUM_OBSERVATION_OPTIONS:
         ind_res = simulator(PROB_DATA, distributions, moving_avg_longterm, kwargs={'num_observation': NUM_OBSERVATION})
         res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
@@ -77,7 +81,7 @@ for i in tqdm(range(100)):
         res['price'].extend(ind_res[2])
 
     # MOVING AVERAGE SHORTERM POLICY
-    NUM_OBSERVATION_OPTIONS = np.linspace(3,15,13)
+    NUM_OBSERVATION_OPTIONS = np.linspace(3, 15, 13)
     for NUM_OBSERVATION in NUM_OBSERVATION_OPTIONS:
         ind_res = simulator(PROB_DATA, distributions, moving_avg_shorterm, kwargs={'num_observation': NUM_OBSERVATION})
         res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
@@ -88,7 +92,7 @@ for i in tqdm(range(100)):
         res['price'].extend(ind_res[2])
 
     # NAIVE LIKELIHOOD POLICY
-    LIKELIHOOD_ESTIMATOR_PROB_OPTIONS = np.linspace(0,1,51)
+    LIKELIHOOD_ESTIMATOR_PROB_OPTIONS = np.linspace(0, 1, 51)
     for LIKELIHOOD_ESTIMATOR_PROB in LIKELIHOOD_ESTIMATOR_PROB_OPTIONS:
         ind_res = simulator(PROB_DATA, distributions, likelihood_naive, kwargs={'req_likelihood': LIKELIHOOD_ESTIMATOR_PROB})
         res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
@@ -106,15 +110,15 @@ for i in tqdm(range(100)):
     res['week'].extend(ind_res[0])
     res['sales'].extend(ind_res[1])
     res['price'].extend(ind_res[2])
-    
-    # REINFORCEMENT LEARNING POLICY
-    ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'q_table': RL_POL})
-    res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
-    res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
-    res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
-    res['week'].extend(ind_res[0])
-    res['sales'].extend(ind_res[1])
-    res['price'].extend(ind_res[2])
+
+    # # REINFORCEMENT LEARNING POLICY
+    # ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'q_table': RL_POL})
+    # res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
+    # res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
+    # res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
+    # res['week'].extend(ind_res[0])
+    # res['sales'].extend(ind_res[1])
+    # res['price'].extend(ind_res[2])
 
 res = pd.DataFrame(res)
 res['revenue'] = res['sales'] * res['price']
@@ -149,22 +153,22 @@ res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.S
 res_rl = res.query(f'policy == "reinforcement_learning"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_all = pd.concat([res_baseline, 
-                     res_moving_avg_longterm, 
-                     res_moving_avg_shorterm, 
-                     res_likelihood_naive, 
+res_all = pd.concat([res_baseline,
+                     res_moving_avg_longterm,
+                     res_moving_avg_shorterm,
+                     res_likelihood_naive,
                      res_likelihood_price,
                      res_random,
                      res_rl])
 
 
-#%% 
+# %%
 # Plot Simulations
 fig = px.line(res_all, x='week', y='cum_revenue', color='policy',
               facet_col='policy', facet_col_wrap=3,)
 fig.update_traces(opacity=0.05)
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/simulation_results.png', scale=1, width=1200, height=900)
+# pio.write_image(fig, 'images/simulation_results.png', scale=1, width=1200, height=900)
 
 
 # Aggregate
@@ -175,7 +179,7 @@ res_all_agg = res_all.\
 
 fig = px.line(res_all_agg, x='week', y='cum_revenue', color='policy',)
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/revenue_aggregation.png', scale=1, width=1200, height=900)
+# pio.write_image(fig, 'images/revenue_aggregation.png', scale=1, width=1200, height=900)
 
 
 # Prices versus Sales
@@ -184,38 +188,38 @@ res_all_agg_versus = res_all.\
     agg({'price': 'mean', 'sales': 'mean'}).\
     reset_index()
 fig = px.bar(res_all_agg_versus, x='week', y='sales', color='policy',
-              facet_col='policy', facet_col_wrap=3, )
-# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "baseline"').week, 
-#                          y=res_all_agg_versus.query(f'policy == "baseline"').price, 
+             facet_col='policy', facet_col_wrap=3, )
+# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "baseline"').week,
+#                          y=res_all_agg_versus.query(f'policy == "baseline"').price,
 #                          name = 'price_baseline',
 #                          mode='lines'), row = 3, col = 1)
-# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_naive"').week, 
-#                          y=res_all_agg_versus.query(f'policy == "likelihood_naive"').price, 
+# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_naive"').week,
+#                          y=res_all_agg_versus.query(f'policy == "likelihood_naive"').price,
 #                          name = 'price_likelihood_naive',
 #                          mode='lines'), row = 3, col = 2)
-# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_price"').week, 
-#                          y=res_all_agg_versus.query(f'policy == "likelihood_price"').price, 
+# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_price"').week,
+#                          y=res_all_agg_versus.query(f'policy == "likelihood_price"').price,
 #                          name = 'price_likelihood_price',
 #                          mode='lines'), row = 2, col = 1)
-# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_longterm"').week, 
+# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_longterm"').week,
 #                          y=res_all_agg_versus.query(f'policy == "moving_avg_longterm"').price,
 #                          name = 'price_moving_avg_longterm',
 #                          mode='lines'), row = 2, col = 2)
-# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_shorterm"').week, 
+# fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "moving_avg_shorterm"').week,
 #                          y=res_all_agg_versus.query(f'policy == "moving_avg_shorterm"').price,
 #                          name = 'price_moving_avg_shorterm',
 #                          mode='lines'), row = 1, col = 1)
 
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/prices_versus_sales.png', scale=1, width=1200, height=900)
+# pio.write_image(fig, 'images/prices_versus_sales.png', scale=1, width=1200, height=900)
 
 # Revenue Distribution - Hist and Rug
-res_rev_all = res_all.groupby(['repl','policy']).agg({'revenue': 'sum'}).reset_index()
+res_rev_all = res_all.groupby(['repl', 'policy']).agg({'revenue': 'sum'}).reset_index()
 res_rev = []
 for policy in res_rev_all.policy.unique():
     res_rev.append(res_rev_all[res_rev_all.policy == policy]['revenue'])
 
-fig = ff.create_distplot(res_rev, res_rev_all.policy.unique(), 
+fig = ff.create_distplot(res_rev, res_rev_all.policy.unique(),
                          bin_size=1000, curve_type='normal')
 fig.show(renderer='browser')
 # fig.write_image('images/revenue_distribution_hist.png')
@@ -225,7 +229,7 @@ fig.show(renderer='browser')
 fig = px.box(res_rev_all, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/revenue_distribution_box.png', scale=1, width=1200, height=900)
+# pio.write_image(fig, 'images/revenue_distribution_box.png', scale=1, width=1200, height=900)
 
 
 # %%
