@@ -56,6 +56,11 @@ def moving_avg_shorterm(problem_dat, actions, sales, prices, **kwargs):
         return (actions[curr_price][0])
 
 
+def random_policy(problem_dat, actions, sales, prices, **kwargs):
+    curr_price = prices[-1]
+    return (np.random.choice(problem_dat['actions'][curr_price]))
+
+
 def likelihood_naive(problem_dat, actions, sales, prices, **kwargs):
 
     # Get Price Relevant Data
@@ -140,3 +145,24 @@ def likelihood_price_dependency(problem_dat, actions, sales, prices, **kwargs):
 
 #     else:
 #         return (ACTIONS[curr_price][0])
+
+
+def rl_policy(problem_dat, actions, sales, prices, **kwargs):
+
+    # Mapping
+    _action_to_price = {0: 60, 1: 54, 2: 48,3: 36,}
+    _price_to_action = {60:0, 54:1, 48:2, 36:3}
+
+    # Get Action
+    q_table = kwargs['kwargs']['q_table']
+    curr_action = int(_price_to_action[prices[-1]])
+    curr_sales = int(sales[-1])
+    curr_sales = np.min([curr_sales, 299])
+    curr_week = len(sales) - 1
+    tot_sales = int(np.sum(sales))
+    new_action = np.argmax(q_table[curr_week, curr_action, curr_sales, tot_sales])
+    
+    if new_action >= curr_action:
+        return(_action_to_price[new_action])
+    else:
+        return(_action_to_price[curr_action])
