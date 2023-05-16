@@ -7,13 +7,13 @@
 \contentsline {subsection}{\numberline {3.4}Adaptive Likelihood Price Policy}{5}{subsection.3.4}%
 \contentsline {subsection}{\numberline {3.5}Likelihood Demand Trend Projection}{5}{subsection.3.5}%
 \contentsline {subsection}{\numberline {3.6}Short-term Moving Average Naïve}{6}{subsection.3.6}%
-\contentsline {subsection}{\numberline {3.7}Long-term Adaptive Moving Average with Wait}{6}{subsection.3.7}%
+\contentsline {subsection}{\numberline {3.7}Long-term Adaptive Moving Average with Wait}{7}{subsection.3.7}%
 \contentsline {subsection}{\numberline {3.8}Reinforcement Learning}{7}{subsection.3.8}%
-\contentsline {section}{\numberline {4}Implementation}{7}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Data Treatment}{7}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Simulation}{8}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Validation}{9}{subsection.4.3}%
-\contentsline {section}{\numberline {5}Discussion and Recommendations}{10}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Policy Comparison}{10}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Recommended Policy}{11}{subsection.5.2}%
-\contentsline {section}{\numberline {6}References}{12}{section.6}%
+\contentsline {section}{\numberline {4}Implementation}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Data Treatment}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Simulation}{9}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Validation}{10}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Discussion and Recommendations}{11}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Policy Comparison}{11}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Recommended Policy}{12}{subsection.5.2}%
+\contentsline {section}{\numberline {6}References}{13}{section.6}%
