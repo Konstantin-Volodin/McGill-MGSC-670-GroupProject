@@ -35,9 +35,21 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_price': 60,
              'total_duration': 15}
 
-with open('data/rl_approx.pkl', 'rb') as inp:
-    RL_APPROX = pickle.load(inp)
+# GET VARIOUS RL POLICIES
+policies = ['ridge_tr', 'ridge_notr', 'ada_notr', 'ada_tr']
+best_pols = []
+for j in policies:
+    reward = []
+    for i in range(300):
+        with open(f'data/rl_approx_{j}_{i+1}.pkl', 'rb') as inp:
+            reward.append(pickle.load(inp).rev)
 
+    ma_best = pd.Series(reward).rolling(7).mean().idxmax()
+    best = pd.Series(reward).idxmax()
+
+    best_pols.append(f"{j}_{ma_best}")
+    best_pols.append(f"{j}_{best}")
+best_pols
 
 # %%
 # SIMULATION
@@ -126,13 +138,16 @@ for i in tqdm(range(100)):
     res['price'].extend(ind_res[2])
 
     # REINFORCEMENT LEARNING POLICY
-    ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'rl_object': RL_APPROX})
-    res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
-    res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
-    res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
-    res['week'].extend(ind_res[0])
-    res['sales'].extend(ind_res[1])
-    res['price'].extend(ind_res[2])
+    for pol in best_pols:
+        with open(f'data/rl_approx_{pol}.pkl', 'rb') as inp:
+            RL_APPROX = pickle.load(inp)
+        ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'rl_object': RL_APPROX})
+        res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
+        res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
+        res['param'].extend([pol for j in range(PROB_DATA['total_duration'])])
+        res['week'].extend(ind_res[0])
+        res['sales'].extend(ind_res[1])
+        res['price'].extend(ind_res[2])
 
 res = pd.DataFrame(res)
 res['revenue'] = res['sales'] * res['price']
@@ -167,7 +182,7 @@ res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['reve
 res_random = res.query(f'policy == "random"')
 res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_rl = res.query(f'policy == "reinforcement_learning"')
+res_rl = res.query(f'policy == "reinforcement_learning" and param == "ridge_tr_98"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_all = pd.concat([res_baseline,
@@ -186,7 +201,7 @@ fig = px.line(res_all, x='week', y='cum_revenue', color='policy',
               facet_col='policy', facet_col_wrap=3,)
 fig.update_traces(opacity=0.05)
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/simulation_results.png', scale=1, width=1500, height=900)
+# pio.write_image(fig, 'images/simulation_results.png', scale=1, width=1500, height=900)
 
 
 # Aggregate
@@ -197,7 +212,7 @@ res_all_agg = res_all.\
 
 fig = px.line(res_all_agg, x='week', y='cum_revenue', color='policy',)
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/revenue_aggregation.png', scale=1, width=1500, height=900)
+# pio.write_image(fig, 'images/revenue_aggregation.png', scale=1, width=1500, height=900)
 
 
 # Prices versus Sales
@@ -237,7 +252,7 @@ fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "random"').week,
                          mode='lines'), row=1, col=1)
 
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/prices_versus_sales.png', scale=1, width=1500, height=900)
+# pio.write_image(fig, 'images/prices_versus_sales.png', scale=1, width=1500, height=900)
 
 # Revenue Distribution - Hist and Rug
 res_rev_all = res_all.groupby(['repl', 'policy']).agg({'revenue': 'sum'}).reset_index()
@@ -248,13 +263,13 @@ for policy in res_rev_all.policy.unique():
 fig = ff.create_distplot(res_rev, res_rev_all.policy.unique(),
                          bin_size=1000, curve_type='normal')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/revenue_distribution_hist.png', scale=1, width=1500, height=900)
+# pio.write_image(fig, 'images/revenue_distribution_hist.png', scale=1, width=1500, height=900)
 
 # Revenue Distribution - Boxplot
 fig = px.box(res_rev_all, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/revenue_distribution_box.png', scale=1, width=1800, height=900)
+# pio.write_image(fig, 'images/revenue_distribution_box.png', scale=1, width=1800, height=900)
 
 # Revenue Distribution - Table
 res_rev_all.groupby(['policy']).agg({'revenue': ['mean', 'std']}).sort_values(by=('revenue', 'mean'), ascending=False).reset_index()

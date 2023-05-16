@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import plotly.io as pio
 from tqdm import tqdm
+import pickle
+from rl import QL_func_estimator
 
 from modules.funcs import (validator,
                            clean_up_relevant_data,
@@ -32,6 +34,9 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_inventory': 2000,
              'start_price': 60,
              'total_duration': 15}
+
+with open('data/rl_approx_160.pkl', 'rb') as inp:
+    RL_APPROX = pickle.load(inp)
 
 # %%
 # VALIDATION
@@ -101,6 +106,17 @@ for i in tqdm(range(20)):
     res['difference'].append(ind_res[2])
     res['policy'].append('likelihood_price')
     res['param'].append('none')
+
+    # REINFORCEMENT LEARNING POLICY
+    ind_res = validator(PROB_DATA, i, rl_policy, kwargs={'rl_object': RL_APPROX})
+    res['seed'].append(i)
+    res['revenue'].append(ind_res[0])
+    res['perf_revenue'].append(ind_res[1])
+    res['difference'].append(ind_res[2])
+    res['policy'].append('rl_policy')
+    res['param'].append('none')
+
+
 res = pd.DataFrame(res)
 res.to_csv('data/validation_result.csv', index = False)
 
@@ -110,12 +126,12 @@ res.to_csv('data/validation_result.csv', index = False)
 fig = px.box(res, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
+# pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
 
 # DIFFERENCE DISTRIBUTION
 fig = px.box(res, y='difference', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
+# pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
 
 # %%

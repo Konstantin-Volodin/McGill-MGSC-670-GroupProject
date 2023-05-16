@@ -5,15 +5,13 @@ import plotly.express as px
 from tqdm import tqdm
 from modules.funcs import (clean_up_relevant_data,
                            get_price_dependency)
-from modules.policies import likelihood_naive
 
 import sklearn.pipeline
 import sklearn.preprocessing
 from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline
+from sklearn.linear_model import Ridge
 from sklearn.ensemble import AdaBoostRegressor
-from sklearn.linear_model import SGDRegressor 
 
 import gymnasium as gym
 from gymnasium import spaces
@@ -177,14 +175,14 @@ class QL_est():
 class QL_func_estimator():
     """Value Function Linear Approximator"""
 
-    def __init__(self, env, tranformation):
+    def __init__(self, env, tranformation, inp_model):
         self.models = []
         self.X_tr = []
         self.Y_tr = []
         self.transformer = tranformation
         self.actions = env.action_space.n
         for _ in range(env.action_space.n):
-            model = AdaBoostRegressor()
+            model = inp_model()
             model.fit([self.featurize_state(env.reset())], [0])
             self.models.append(model)
             self.X_tr.append([])
@@ -223,7 +221,7 @@ class QL_func_estimator():
         self.X_tr[a].append(self.featurize_state(s))
         self.Y_tr[a].append(r + disc * nest_state_val)
 
-    def update(self):
+    def update(self, upd):
         """Updates the estimator given currently saved data"""
         for a in range(self.actions):
             self.models[a].fit(self.X_tr[a], self.Y_tr[a])
@@ -231,15 +229,15 @@ class QL_func_estimator():
             # self.X_tr[a] = []
             # self.Y_tr[a] = []
 
-            # idx = np.random.randint(len(self.X_tr[a]), size=1000)
-            # self.X_tr[a] = np.array(self.X_tr[a] )
-            # self.Y_tr[a] = np.array(self.Y_tr[a] )
+            idx = np.random.randint(len(self.X_tr[a]), size=int(len(self.X_tr[a]) * (1-upd)))
+            self.X_tr[a] = np.array(self.X_tr[a] )
+            self.Y_tr[a] = np.array(self.Y_tr[a] )
 
-            # self.X_tr[a] = self.X_tr[a][idx]
-            # self.Y_tr[a] = self.Y_tr[a][idx]
+            self.X_tr[a] = self.X_tr[a][idx]
+            self.Y_tr[a] = self.Y_tr[a][idx]
 
-            # self.X_tr[a] = list(self.X_tr[a] )
-            # self.Y_tr[a] = list(self.Y_tr[a] )
+            self.X_tr[a] = list(self.X_tr[a] )
+            self.Y_tr[a] = list(self.Y_tr[a] )
 
     def get_action(self, observation):
         """Returns the best action given the current policy value"""
@@ -252,51 +250,51 @@ class QL_func_estimator():
 if __name__ == '__main__':
 
     # %% Reinforcement Learning
-    #### NAIVE Q LEARNING #####
-    # Setup
-    env = MarkdownEnv(PROB_DATA)
+    # #### NAIVE Q LEARNING #####
+    # # Setup
+    # env = MarkdownEnv(PROB_DATA)
 
-    # Prepare Transformation Pipelines
-    sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
-    quantizer = sklearn.preprocessing.KBinsDiscretizer(n_bins=10, encode='ordinal')
-    quantizer.fit(sample_vals[:, 1:4])
+    # # Prepare Transformation Pipelines
+    # sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
+    # quantizer = sklearn.preprocessing.KBinsDiscretizer(n_bins=10, encode='ordinal')
+    # quantizer.fit(sample_vals[:, 1:4])
 
-    # Policy Estimator
-    ql_est = QL_est(env, quantizer)
+    # # Policy Estimator
+    # ql_est = QL_est(env, quantizer)
 
-    # Optimization
-    rewards = []
-    exp = 0.1
-    disc = 0.95
-    upd = 0.05
-    epochs = 100000
-    for i in tqdm(range(epochs)):
+    # # Optimization
+    # rewards = []
+    # exp = 0.5
+    # disc = 0.95
+    # upd = 0.05
+    # epochs = 100000
+    # for i in tqdm(range(epochs)):
 
-        state = env.reset()
-        terminated = False
+    #     state = env.reset()
+    #     terminated = False
 
-        while not terminated:
+    #     while not terminated:
 
-            # Exploration
-            if np.random.uniform(0, 1) < exp:
-                action = env.action_space.sample()
-            # Exploitation
-            else:
-                action = ql_est.get_action(state)
+    #         # Exploration
+    #         if np.random.uniform(0, 1) < exp:
+    #             action = env.action_space.sample()
+    #         # Exploitation
+    #         else:
+    #             action = ql_est.get_action(state)
 
-            # Updates Policy
-            new_state, reward, terminated, _ = env.step(action)
-            ql_est.update(state, action, reward, new_state, upd, disc)
+    #         # Updates Policy
+    #         new_state, reward, terminated, _ = env.step(action)
+    #         ql_est.update(state, action, reward, new_state, upd, disc)
 
-            # Update State
-            state = new_state
+    #         # Update State
+    #         state = new_state
 
-        rewards.append(reward)
+    #     rewards.append(reward)
 
-    rew_ma = pd.DataFrame(rewards).rolling(int(epochs*0.02)).mean()
-    fig = px.line(rew_ma)
-    fig.update_traces(line={'width': 1})
-    fig.show(renderer='browser')
+    # rew_ma = pd.DataFrame(rewards).rolling(int(epochs*0.02)).mean()
+    # fig = px.line(rew_ma)
+    # fig.update_traces(line={'width': 1})
+    # fig.show(renderer='browser')
 
     # %%
     ##### APPROXIMATION Q LEARNING #####
@@ -307,25 +305,37 @@ if __name__ == '__main__':
 
     # Prepare Transformation Pipelines
     sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
-    cat_pipe = Pipeline([ ('encode', sklearn.preprocessing.OneHotEncoder(drop='first')) ])
-    num_pipe = Pipeline([ ('transform', sklearn.preprocessing.RobustScaler()), ])
-    pre_pipe = ColumnTransformer([ ("categorical", cat_pipe, [0]),
-                              ("numerical", num_pipe, [1,2,3]),])
-    feature_pipe = Pipeline([ ('polynomial_features', sklearn.preprocessing.PolynomialFeatures()) ])
-    full_pipe = Pipeline([ ('preprocessing', pre_pipe),
-                           ('transformation', feature_pipe) ])
+    cat_pipe = Pipeline([ 
+        ('encode', sklearn.preprocessing.OneHotEncoder(drop='first')) 
+    ])
+    num_pipe = Pipeline([ 
+        ('transform', sklearn.preprocessing.RobustScaler()), 
+    ])
+    pre_pipe = ColumnTransformer([ 
+        ("categorical", cat_pipe, [0]),
+        ("numerical", num_pipe, [1,2,3]),
+    ])
+    feature_pipe = Pipeline([ 
+        ('polynomial_features', sklearn.preprocessing.PolynomialFeatures()) 
+    ])
+    full_pipe = Pipeline([ 
+        ('preprocessing', pre_pipe),
+        ('transformation', feature_pipe) 
+    ])
     full_pipe.fit(sample_vals)
 
     # Policy Estimator
-    qlf_est = QL_func_estimator(env, full_pipe)
+    qlf_est = QL_func_estimator(env, full_pipe, AdaBoostRegressor)
+    export_file = 'rl_approx_ada_tr'
 
     # Optimization
     rewards_epoch = []
     rewards_all = []
-    exp = 0.5
+    exp = 0.975
     disc = 0.95
-    epochs = 10000
-    minibatch = 16
+    epochs = 250
+    upd = 0.05
+    minibatch = 32
     for i in range(epochs):
 
         # Generate Minibatch Data
@@ -338,7 +348,7 @@ if __name__ == '__main__':
             while not terminated:
 
                 # Exploration
-                if np.random.uniform(0, 1) < exp:
+                if np.random.uniform(0, 1) < (exp**i):
                     action = env.action_space.sample()
                 # Exploitation
                 else:
@@ -359,19 +369,20 @@ if __name__ == '__main__':
 
         # Update Model with New Minibatch
         print(f"Epoch {i+1}: {rewards_epoch[-1]}")
-        qlf_est.update()
+        qlf_est.rev = rewards_epoch[-1]
+        with open(f'data/{export_file}_{i+1}.pkl', 'wb') as outp:
+            pickle.dump(qlf_est, outp, pickle.HIGHEST_PROTOCOL)
+        qlf_est.update(upd)
 
-    with open('data/rl_approx.pkl', 'wb') as outp:
-        pickle.dump(qlf_est, outp, pickle.HIGHEST_PROTOCOL)
-
-    # %%
-    fig = px.line(rewards_epoch)
-    fig.update_traces(line={'width': 1})
-    fig.show(renderer='browser')
 
     # %%
-    rew_ma = pd.DataFrame(rewards_all).rolling(int(len(rewards_all)*0.05)).mean()
-    fig = px.line(rewards_all)
-    fig.update_traces(line={'width': 1})
-    fig.show(renderer='browser')
+    # fig = px.line(rewards_epoch)
+    # fig.update_traces(line={'width': 1})
+    # fig.show(renderer='browser')
+
+    # # %%
+    # rew_ma = pd.DataFrame(rewards_all).rolling(int(len(rewards_all)*0.05)).mean()
+    # fig = px.line(rewards_all)
+    # fig.update_traces(line={'width': 1})
+    # fig.show(renderer='browser')
     # %%
