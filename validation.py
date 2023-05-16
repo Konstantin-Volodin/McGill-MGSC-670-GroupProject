@@ -15,6 +15,7 @@ from modules.policies import (baseline_policy,
                               moving_avg_longterm,
                               moving_avg_shorterm,
                               likelihood_naive,
+                              likelihood_shared_distribution,
                               likelihood_price_dependency,
                               random_policy,
                               rl_policy)
@@ -82,6 +83,16 @@ for i in tqdm(range(20)):
     res['policy'].append('likelihood_naive')
     res['param'].append(0.04)
 
+    # SHARED LIKELIHOOD POLICY
+    ind_res = validator(PROB_DATA, i, likelihood_shared_distribution, 
+                        kwargs={'req_likelihood': 0.03, 'mean_dependency': MEAN_DEPENDENCY, 'sd_dependency': SD_DEPENDENCY})
+    res['seed'].append(i)
+    res['revenue'].append(ind_res[0])
+    res['perf_revenue'].append(ind_res[1])
+    res['difference'].append(ind_res[2])
+    res['policy'].append('likelihood_shared')
+    res['param'].append(0.03)
+
     # PRICE DEPENDENCY LIKELIHOOD POLICY
     ind_res = validator(PROB_DATA, i, likelihood_price_dependency, kwargs={'mean_dependency': MEAN_DEPENDENCY, 'sd_dependency': SD_DEPENDENCY})
     res['seed'].append(i)
@@ -98,12 +109,12 @@ res = pd.DataFrame(res)
 fig = px.box(res, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-# pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1500, height=900)
+pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1500, height=900)
 
 # DIFFERENCE DISTRIBUTION
 fig = px.box(res, y='difference', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-# pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1500, height=900)
+pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1500, height=900)
 
 # %%
