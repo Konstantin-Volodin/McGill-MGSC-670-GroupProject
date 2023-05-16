@@ -144,14 +144,22 @@ This policy uses the previously observed data to predict the likelihood that giv
 If at time t the inventory is not likely to sell out, the model investigates the remaining price choices and selects the first discount that gives a high probability of inventory sell out. 
 For instance, at week 5 the model determines that the sales are not likely to lead to sell out, but the 10\% , 20\% and 40\% markdowns are all likely to lead to inventory sell out, so the model adjusts the \% off to 10\% to stimulate sales. 
 
-We expect this model to have a high consistency of difference between revenue and the \emph{perfect foresight strategy}, with higher revenue than the baseline model and potential room for improvement.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{pic/f3.png}
+    \caption{Naïve Adaptative Likelihood Policy Decision Tree}
+\end{figure}
+
+\hfill \break
+\indent We expect this model to have a high consistency of difference between revenue and the \emph{perfect foresight strategy}, with higher revenue than the baseline model and potential room for improvement.
 
 \subsection{Adaptive Likelihood Price Policy}
-The fourth policy we will investigate is an adaptive likelihood price method. 
+The fourth policy is an adaptive likelihood price method. 
 This method is similar to the naïve adaptive likelihood policy with a critical difference. 
 Instead of using the estimated unit price increase this model aggregates the revenue from 10 separate forecasts for the remaining weeks. 
-The 10 forecasts are run for each price point remaining and are based on randomly selected observed data from pervious runs.  
-The model should help capture the original model’s randomness through more robust forecasts. 
+In other words, the model computes the expected revenue for 10 separate “what if” forecasts based on the observed distributions of historic data and assumes the price will not change before week 15.  
+The revenue from the 10 forecasts run for each price point remaining at time t are summed and the one with the largest total revenue is used as the new price point. 
+The model should help capture the original model’s randomness through more robust forecasts.
 
 We expect this model to produce a more consistent difference between revenue and the \emph{perfect foresight strategy} with a higher average revenue than the naïve adaptive likelihood policy.
 
@@ -196,9 +204,9 @@ However, we also expect this model to have the highest average revenue of all mo
 A proposed final future state policy is the reinforcement learning strategy. 
 Artificial intelligence models rely on supervised reinforcement learning which learn as they go. 
 The models are rewarded for certain actions and attempt to maximize the reward, relying on previous runs or iterations to build off of. 
-These models are ideal for repeated tasks that have defined conditions. For example, Open Ai in 2019 demonstrated a reinforcement learning model that simulated a game of hide and seek \cite{baker2019emergent}. 
+These models are ideal for repeated tasks that have defined conditions. For example, Open AI in 2019 demonstrated a reinforcement learning model that simulated a game of hide and seek \cite{baker2019emergent}. 
 We will apply reinforcement learning to this problem, where the reward function is the maximization of the revenue, and the inputs are from the app itself. 
-While this model offers little explanation ability since rl models are black box models, the reinforcement learning policy may perform better than previous policies.
+While this model offers little explanation ability since reinforcement learning models are black box models, the reinforcement learning policy may perform better than previous policies.
 
 We expect that the reinforcement learning model will have the highest revenue and the lowest revenue distribution of all models previously tested.
 
@@ -206,7 +214,6 @@ We expect that the reinforcement learning model will have the highest revenue an
 
 \subsection{Data Treatment}
 While we have access to 15 runs of “historical” data, before using this data, we must apply data preprocessing.
-\pagebreak
 
 First, we must ensure that the data does not contain errors or null values. 
 We, therefore, removed null rows and appended the run number (1-15) to each observation within the data. 
@@ -224,8 +231,7 @@ Since we cannot access the exact equation or similar random number generator use
 The model built takes the policy, the average and the standard deviation of the observed price points and generates 100 simulations. 
 For each simulation and each time t, the model generates unit sales based on a numpy random normal method using the mean and standard deviation of the current price point. 
 The simulation approach best reflects a real-life scenario as a forecast function is generally unknown, resulting in a reliance on past data to predict future demand. 
-The generated numbers reflect the data distribution found within the historical data.
-\pagebreak
+The generated numbers reflect the data distribution found within the historical data.\\
 
 \begin{itemize}[leftmargin=*]
     \item Pseudo Code of Simulation Approach and Validation
@@ -261,7 +267,7 @@ The assumptions and approach we have previously laid out may have unknown challe
 In this scenario we are not limited to the simulation and approximation of “real world data”. 
 We will therefore validate the simulation results using the web application. 
 To implement the validation, we will utilize a selenium-based python script which goes between the code and user interface on the web app. 
-Each policy is tested in real-time against the app while recording the results to evaluate after the fact. \\
+Each policy is tested in real-time against the app while recording the results to evaluate after the fact. 
 
 \begin{itemize}[leftmargin=*]
     \item Pseudo Code of Policy Validation using WebApp
@@ -299,7 +305,7 @@ Conversely, Long Term Adaptive Moving Average and Adaptive likelihood price poli
 These policies often drop prices around week 6 to week 8 and significantly increase sales afterward. 
 Yet, with discounted prices, the average revenue does not outperform others. 
 Figure 6 demonstrates the weekly sales figures for each model and validates this observation. 
-For instance, the average long-term policy drops the price around 8 weeks for an immediate sales increase, but quickly panics and keeps lowering the price until the 40\% discount is reached. 
+For instance, the average long-term policy drops the price around 8 week for an immediate sales increase, but quickly panics and keeps lowering the price until the 40\% discount is reached. 
 The models with a slower price markdown strategy perform best in total revenue generation. 
 
 \subsection{Recommended Policy}
