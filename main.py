@@ -40,7 +40,8 @@ policies = ['ridge_tr', 'ridge_notr', 'ada_notr', 'ada_tr']
 best_pols = []
 for j in policies:
     reward = []
-    for i in range(300):
+    print(j)
+    for i in range(500):
         with open(f'data/rl_approx_{j}_{i+1}.pkl', 'rb') as inp:
             reward.append(pickle.load(inp).rev)
 
@@ -49,8 +50,14 @@ for j in policies:
 
     best_pols.append(f"{j}_{ma_best}")
     best_pols.append(f"{j}_{best}")
+
+#%%
 best_pols = list(set(best_pols))
-best_pols
+best_pols_obj = {}
+for pol in best_pols:
+    with open(f'data/rl_approx_{pol}.pkl', 'rb') as inp:
+        best_pols_obj[pol] = pickle.load(inp)
+
 
 # %%
 # SIMULATION
@@ -140,9 +147,7 @@ for i in tqdm(range(100)):
 
     # REINFORCEMENT LEARNING POLICY
     for pol in best_pols:
-        with open(f'data/rl_approx_{pol}.pkl', 'rb') as inp:
-            RL_APPROX = pickle.load(inp)
-        ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'rl_object': RL_APPROX})
+        ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'rl_object': best_pols_obj[pol]})
         res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
         res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
         res['param'].extend([pol for j in range(PROB_DATA['total_duration'])])
@@ -183,7 +188,7 @@ res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['reve
 res_random = res.query(f'policy == "random"')
 res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_rl = res.query(f'policy == "reinforcement_learning" and param == "ridge_notr_146"')
+res_rl = res.query(f'policy == "reinforcement_learning" and param == "ada_notr_122"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_all = pd.concat([res_baseline,

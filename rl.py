@@ -325,16 +325,16 @@ if __name__ == '__main__':
     full_pipe.fit(sample_vals)
 
     # Policy Estimator
-    qlf_est = QL_func_estimator(env, full_pipe, AdaBoostRegressor)
-    export_file = 'rl_approx_ada_tr'
+    qlf_est = QL_func_estimator(env, full_pipe, Ridge)
+    export_file = 'rl_approx_ridge_tr'
 
     # Optimization
     rewards_epoch = []
     rewards_all = []
-    exp = 0.975
+    exp = 0.1
     disc = 0.95
-    epochs = 250
-    upd = 0.05
+    epochs = 500
+    upd = 0.01
     minibatch = 32
     for i in range(epochs):
 
@@ -348,7 +348,7 @@ if __name__ == '__main__':
             while not terminated:
 
                 # Exploration
-                if np.random.uniform(0, 1) < (exp**i):
+                if np.random.uniform(0, 1) < exp:
                     action = env.action_space.sample()
                 # Exploitation
                 else:
