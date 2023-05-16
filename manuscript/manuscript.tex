@@ -89,6 +89,15 @@ Several strategies or pricing policies may be appropriate for benchmarking and c
 We will investigate several markdown or price change methods to understand their impact and potential application. 
 We will evaluate the results using a simulation of the price and demand via a simulation based on mean price, standard deviation, and random number generation.
 
+\subsection{Random Policy}
+We will first investigate a random choice policy. 
+This policy represents a likely worst-case scenario, where a company has no expertise and not logic to operate with. 
+The policy will arbitrarily choose the pricing policy at each time t.  
+
+Based on the random nature of the model and rules of the model, we expect a smaller distribution then the baseline mode (presented next). 
+Since we cannot raise the price once lowered the cumulative probability of a 40\% discount approaches 50\% by the end of the 15 weeks, which is the highest of any choice. 
+The distribution of revenue should largely follow the distribution of the 40\% off price distribution we have observed. 
+
 \subsection{Baseline Model - Price Consistency}
 We will investigate a naïve approach to markdown strategies: do nothing. 
 We consider this a baseline model and not the most efficient one. 
@@ -106,6 +115,8 @@ The model uses rules based on the sales increase per price category to estimate 
 If the estimated units sold by the end of the 15 weeks is less than the remaining units, the model increases the discount to stimulate the forecasted demand. 
 
 We expect this model to have a high consistency of difference between revenue and the \emph{perfect foresight strategy}, with higher revenue than the baseline model and potential room for improvement.
+
+\subsection{likelihood shared}
 
 \subsection{Adaptive Likelihood Price Policy}
 The third policy we will investigate is an adaptive likelihood price method. 
@@ -138,6 +149,16 @@ Therefore, the model will wait until 3 weeks after the previous price change, to
 
 We expect this model to have a lower difference consistency than the naïve average, since it is likely that more of the units sold will be at different price points whereas the average model will have over 50\% of the units sold for the maximum or minimum price. 
 However, we also expect that this model will result in the highest average revenue from all models.
+
+\subsection{Reinforcement Learning}
+Some artificial intelligence models rely on supervised reinforcement learning which learn as they go. 
+The models are rewarded for certain actions and attempt to maximize the reward, relying on previous runs or iterations to build off of. 
+These models are ideal for repeated tasks that have defined conditions. 
+For example, Open Ai in 2019 demonstrated a reinforcement learning model that simulated a game of hide and seek \cite{baker2019emergent}.
+We will apply reinforcement learning to this problem, where the reward function is the maximization of the revenue, and the inputs are the app itself. 
+While this model offers little explanation ability since rl models are black box models, the reinforcement learning policy may perform better than previous policies. 
+
+We expect that the reinforcement learning model will have the highest revenue and the lowest revenue distribution of all models previously tested. 
 
 \section{Implementation}
 
@@ -221,6 +242,10 @@ Each policy is tested in real-time against the app while recording the results t
 \pagebreak
 
 \section{Discussion and Recommendations}
+
+\subsection{Policy Comparison}
+
+\subsection{Recommended Policy}
 
 \pagebreak
 \bibliographystyle{apalike}

@@ -102,6 +102,7 @@ for i in tqdm(range(20)):
     res['policy'].append('likelihood_price')
     res['param'].append('none')
 res = pd.DataFrame(res)
+res.to_csv('data/validation_result.csv', index = False)
 
 
 # %%
@@ -109,12 +110,12 @@ res = pd.DataFrame(res)
 fig = px.box(res, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1500, height=900)
+pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
 
 # DIFFERENCE DISTRIBUTION
 fig = px.box(res, y='difference', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1500, height=900)
+pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
 
 # %%
