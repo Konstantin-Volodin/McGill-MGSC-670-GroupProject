@@ -5,14 +5,19 @@ import plotly.express as px
 from tqdm import tqdm
 from modules.funcs import (clean_up_relevant_data,
                            get_price_dependency)
+from modules.policies import likelihood_naive
 
 import sklearn.pipeline
 import sklearn.preprocessing
-from sklearn.linear_model import SGDRegressor
-from sklearn.kernel_approximation import RBFSampler
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.linear_model import SGDRegressor 
 
 import gymnasium as gym
 from gymnasium import spaces
+import pickle
 
 # PREPARE DATA
 df = pd.read_csv('data/data.csv')
@@ -146,7 +151,7 @@ class QL_est():
     def quantize_state(self, state):
         """ Converts a state to quantized data """
         state = np.array(list(state.values()))
-        state[1:3] = quantizer.transform([state[1:3]])[0]
+        state[1:4] = quantizer.transform([state[1:4]])[0]
         return (state)
 
     def update(self, s, a, r, sp, upd, disc):
@@ -159,7 +164,7 @@ class QL_est():
         next_est = np.max(self.q_val[sp_q[0], sp_q[1], sp_q[2], sp_q[3]])
 
         # Updates
-        self.q_val[s_q[0], s_q[1], s_q[2], s_q[3]] = old_est + upd * (r + disc * next_est - old_est)
+        self.q_val[s_q[0], s_q[1], s_q[2], s_q[3]] = (1-upd) * old_est + upd * (r + disc * next_est - old_est)
 
     def get_action(self, state):
         """ Gets the action of the estimator """
@@ -172,18 +177,23 @@ class QL_est():
 class QL_func_estimator():
     """Value Function Linear Approximator"""
 
-    def __init__(self):
+    def __init__(self, env, tranformation):
         self.models = []
+        self.X_tr = []
+        self.Y_tr = []
+        self.transformer = tranformation
+        self.actions = env.action_space.n
         for _ in range(env.action_space.n):
-            model = SGDRegressor(learning_rate="constant")
-            model.partial_fit([self.featurize_state(env.reset())], [0])
+            model = AdaBoostRegressor()
+            model.fit([self.featurize_state(env.reset())], [0])
             self.models.append(model)
+            self.X_tr.append([])
+            self.Y_tr.append([])
 
     def featurize_state(self, state):
         state = list(state.values())
-        scaled = scaler.transform([state])
-        featurized = featurizer.transform(scaled)
-        return featurized[0]
+        transformed = self.transformer.transform([state])
+        return transformed[0]
 
     def predict(self, s, a=None):
         """
@@ -204,148 +214,164 @@ class QL_func_estimator():
             return prediction[0]
 
         else:
-            predictions = np.array([self.models[i].predict([self.featurize_state(s)]) for i in range(env.action_space.n)])
+            predictions = np.array([self.models[i].predict([self.featurize_state(s)]) for i in range(self.actions)])
             return predictions.reshape(-1)
 
-    def update(self, s, a, y):
-        """
-        Updates the estimator parameters for a given state and action towards
-        the target y.
-        """
-        self.models[a].partial_fit([self.featurize_state(s)], [y])
+    def save_data(self, s, a, r, sn, disc):
+        """Saves data for later refitting of the data"""
+        nest_state_val = np.max(self.predict(sn))
+        self.X_tr[a].append(self.featurize_state(s))
+        self.Y_tr[a].append(r + disc * nest_state_val)
+
+    def update(self):
+        """Updates the estimator given currently saved data"""
+        for a in range(self.actions):
+            self.models[a].fit(self.X_tr[a], self.Y_tr[a])
+
+            # self.X_tr[a] = []
+            # self.Y_tr[a] = []
+
+            # idx = np.random.randint(len(self.X_tr[a]), size=1000)
+            # self.X_tr[a] = np.array(self.X_tr[a] )
+            # self.Y_tr[a] = np.array(self.Y_tr[a] )
+
+            # self.X_tr[a] = self.X_tr[a][idx]
+            # self.Y_tr[a] = self.Y_tr[a][idx]
+
+            # self.X_tr[a] = list(self.X_tr[a] )
+            # self.Y_tr[a] = list(self.Y_tr[a] )
 
     def get_action(self, observation):
-        """
-        Returns the best action given the current policy value
-        """
+        """Returns the best action given the current policy value"""
         q_values = self.predict(observation)
         best_action = np.argmax(q_values)
         return best_action
 
 
-# %% Reinforcement Learning
-##### NAIVE Q LEARNING #####
-# Setup
-env = MarkdownEnv(PROB_DATA)
+#%%
+if __name__ == '__main__':
 
-# Prepare Transformation Pipelines
-sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
-quantizer = sklearn.preprocessing.KBinsDiscretizer(n_bins=7, encode='ordinal')
-quantizer.fit(sample_vals[:, 1:3])
+    # %% Reinforcement Learning
+    #### NAIVE Q LEARNING #####
+    # Setup
+    env = MarkdownEnv(PROB_DATA)
 
-# Policy Estimator
-nv_est = QL_est(env, quantizer)
+    # Prepare Transformation Pipelines
+    sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
+    quantizer = sklearn.preprocessing.KBinsDiscretizer(n_bins=10, encode='ordinal')
+    quantizer.fit(sample_vals[:, 1:4])
 
-# Optimization
-rewards = []
-exp = 0.1
-disc = 0.95
-upd = 0.1
-epochs = 5000
-for i in tqdm(range(epochs)):
+    # Policy Estimator
+    ql_est = QL_est(env, quantizer)
 
-    state = env.reset()
-    terminated = False
+    # Optimization
+    rewards = []
+    exp = 0.1
+    disc = 0.95
+    upd = 0.05
+    epochs = 100000
+    for i in tqdm(range(epochs)):
 
-    while not terminated:
+        state = env.reset()
+        terminated = False
 
-        # Exploration
-        if np.random.uniform(0, 1) < exp:
-            action = env.action_space.sample()
-        # Exploitation
-        else:
-            action = nv_est.get_action(state)
+        while not terminated:
 
-        # Updates Policy
-        new_state, reward, terminated, _ = env.step(action)
-        nv_est.update(state, action, reward, new_state, upd, disc)
+            # Exploration
+            if np.random.uniform(0, 1) < exp:
+                action = env.action_space.sample()
+            # Exploitation
+            else:
+                action = ql_est.get_action(state)
 
-        # Update State
-        state = new_state
+            # Updates Policy
+            new_state, reward, terminated, _ = env.step(action)
+            ql_est.update(state, action, reward, new_state, upd, disc)
 
-    rewards.append(reward)
+            # Update State
+            state = new_state
 
-# %%
-print(np.count_nonzero(nv_est.q_val))
-fig = px.line(rewards)
-fig.update_traces(line={'width': 0.1})
-fig.show(renderer='browser')
+        rewards.append(reward)
 
-# %%
+    rew_ma = pd.DataFrame(rewards).rolling(int(epochs*0.02)).mean()
+    fig = px.line(rew_ma)
+    fig.update_traces(line={'width': 1})
+    fig.show(renderer='browser')
 
-# ##### APPROXIMATION Q LEARNING #####
-# # Setup
-# env = MarkdownEnv(PROB_DATA)
-# observation_examples = np.array([list(env.state_space.sample().values()) for x in range(10000)])
-# scaler = sklearn.preprocessing.StandardScaler()
-# scaler.fit(pd.DataFrame.from_records(observation_examples))
-# featurizer = sklearn.pipeline.FeatureUnion([
-#         ("rbf1", RBFSampler(gamma=5.0, n_components=100)),
-#         ("rbf2", RBFSampler(gamma=2.0, n_components=100)),
-#         ("rbf3", RBFSampler(gamma=1.0, n_components=100)),
-#         ("rbf4", RBFSampler(gamma=0.5, n_components=100))])
-# featurizer.fit(scaler.transform(pd.DataFrame.from_records(observation_examples)))
-# estimator = QL_func_estimator()
-# policy = qlearn_policy(estimator)
+    # %%
+    ##### APPROXIMATION Q LEARNING #####
+    # Setup
+    env = MarkdownEnv(PROB_DATA)
+    _action_to_price = {0: 60, 1: 54, 2: 48, 3: 36, }
+    _price_to_action = {60: 0, 54: 1, 48: 2, 36: 3}
 
-# # Optimization
-# rewards = []
-# exploration = 0.2
-# discount_factor = 1
-# epochs = 100000
-# for i in tqdm(range(10000)):
+    # Prepare Transformation Pipelines
+    sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
+    cat_pipe = Pipeline([ ('encode', sklearn.preprocessing.OneHotEncoder(drop='first')) ])
+    num_pipe = Pipeline([ ('transform', sklearn.preprocessing.RobustScaler()), ])
+    pre_pipe = ColumnTransformer([ ("categorical", cat_pipe, [0]),
+                              ("numerical", num_pipe, [1,2,3]),])
+    feature_pipe = Pipeline([ ('polynomial_features', sklearn.preprocessing.PolynomialFeatures()) ])
+    full_pipe = Pipeline([ ('preprocessing', pre_pipe),
+                           ('transformation', feature_pipe) ])
+    full_pipe.fit(sample_vals)
 
-#     policy = qlearn_policy(estimator)
-#     state = env.reset()
-#     terminated = False
+    # Policy Estimator
+    qlf_est = QL_func_estimator(env, full_pipe)
 
-#     while not terminated:
+    # Optimization
+    rewards_epoch = []
+    rewards_all = []
+    exp = 0.5
+    disc = 0.95
+    epochs = 10000
+    minibatch = 16
+    for i in range(epochs):
 
-#         # Exploration
-#         if np.random.uniform(0,1) < exploration:
-#             action = env.action_space.sample()
-#         # Exploitation
-#         else:
-#             # action = np.argmax(q_table[(state['week'],
-#             #                             state['curr_price'],
-#             #                             state['curr_sales'],
-#             #                             state['tot_sales'],)])
-#             action = policy(state)
+        # Generate Minibatch Data
+        rewards_mb = []
+        for ii in range(minibatch):
 
-#         # Perform the action -> Get the reward and observe the next state
-#         new_state, reward, terminated, _ = env.step(action)
-#         q_values_new_state = estimator.predict(new_state)
-#         td_target = reward + discount_factor * np.max(q_values_new_state)
-#         estimator.update(state, action, td_target)
+            state = env.reset()
+            terminated = False
 
-#         # PREVIOUS VALUE
-#         # old_estimate = q_table[state['week'], state['curr_price'], state['curr_sales'], state['tot_sales'],action]
+            while not terminated:
 
-#         # # GET NEW VALUE ESTIMATE
-#         # new_state, reward, terminated, truncated  = env.step(action)
-#         # next_estimate = np.max(q_table[(new_state['week'],new_state['curr_price'],
-#         #                                 new_state['curr_sales'], new_state['tot_sales'],)])
-#         # new_estimate = ((1-upd) * old_estimate) + (upd * (reward + next_estimate - old_estimate))
-#         # q_table[(state['week'], state['curr_price'],
-#         #         state['curr_sales'], state['tot_sales'], action)] = new_estimate
+                # Exploration
+                if np.random.uniform(0, 1) < exp:
+                    action = env.action_space.sample()
+                # Exploitation
+                else:
+                    action = qlf_est.get_action(state)
 
-#         # Update State
-#         state = new_state
+                # Updates Policy
+                new_state, reward, terminated, _ = env.step(action)
+                qlf_est.save_data(state, action, reward, new_state, disc)
 
-#             # Y['value'].append(reward)
+                # Update State
+                state = new_state
+                
 
-#     rewards.append(reward)
+            rewards_mb.append(reward)
+            rewards_all.append(reward)
 
-# print(np.count_nonzero(q_table))
+        rewards_epoch.append(np.mean(rewards_mb))
 
-# with open('data/q_policy.npy', 'wb') as file:
-#     np.save(file, q_table)
+        # Update Model with New Minibatch
+        print(f"Epoch {i+1}: {rewards_epoch[-1]}")
+        qlf_est.update()
 
-# #%%
-# fig = px.line(rewards)
-# fig.update_traces(line={'width': 0.1})
-# fig.show(renderer='browser')
+    with open('data/rl_approx.pkl', 'wb') as outp:
+        pickle.dump(qlf_est, outp, pickle.HIGHEST_PROTOCOL)
 
-# # %%
+    # %%
+    fig = px.line(rewards_epoch)
+    fig.update_traces(line={'width': 1})
+    fig.show(renderer='browser')
 
-# %%
+    # %%
+    rew_ma = pd.DataFrame(rewards_all).rolling(int(len(rewards_all)*0.05)).mean()
+    fig = px.line(rewards_all)
+    fig.update_traces(line={'width': 1})
+    fig.show(renderer='browser')
+    # %%

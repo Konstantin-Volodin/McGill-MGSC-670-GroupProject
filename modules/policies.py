@@ -224,16 +224,20 @@ def rl_policy(problem_dat, actions, sales, prices, **kwargs):
     _action_to_price = {0: 60, 1: 54, 2: 48, 3: 36, }
     _price_to_action = {60: 0, 54: 1, 48: 2, 36: 3}
 
-    # Get Action
-    q_table = kwargs['kwargs']['q_table']
-    curr_action = int(_price_to_action[prices[-1]])
-    curr_sales = int(sales[-1])
-    curr_sales = np.min([curr_sales, 299])
-    curr_week = len(sales) - 1
-    tot_sales = int(np.sum(sales))
-    new_action = np.argmax(q_table[curr_week, curr_action, curr_sales, tot_sales])
+    # Model
+    rl_model = kwargs['kwargs']['rl_object']
 
-    if new_action >= curr_action:
-        return (_action_to_price[new_action])
+    # Change the data
+    state = {'curr_price': _price_to_action[prices[-1]],
+             'curr_sales': sales[-1],
+             'tot_sales': np.sum(sales),
+             'week': len(prices)}
+    
+    # Get Action
+    action = rl_model.get_action(state)
+    action = _action_to_price[action]
+
+    if action <= prices[-1]:
+        return action
     else:
-        return (_action_to_price[curr_action])
+        return prices[-1]

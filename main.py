@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import plotly.io as pio
 from tqdm import tqdm
+import pickle
+from rl import QL_func_estimator
 
 from modules.funcs import (simulator,
                            clean_up_relevant_data,
@@ -33,11 +35,14 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_price': 60,
              'total_duration': 15}
 
+with open('data/rl_approx.pkl', 'rb') as inp:
+    RL_APPROX = pickle.load(inp)
+
 
 # %%
 # SIMULATION
 res = {'repl': [], 'week': [], 'sales': [], 'price': [], 'policy': [], 'param': []}
-for i in tqdm(range(300)):
+for i in tqdm(range(100)):
     distributions = {60: {'mean': max(npr.normal(DF_DIST[60]['mean_mean'],
                                                  DF_DIST[60]['mean_sd']), 0),
                           'sd': max(npr.normal(DF_DIST[60]['sd_mean'],
@@ -120,14 +125,14 @@ for i in tqdm(range(300)):
     res['sales'].extend(ind_res[1])
     res['price'].extend(ind_res[2])
 
-    # # REINFORCEMENT LEARNING POLICY
-    # ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'q_table': RL_POL})
-    # res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
-    # res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
-    # res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
-    # res['week'].extend(ind_res[0])
-    # res['sales'].extend(ind_res[1])
-    # res['price'].extend(ind_res[2])
+    # REINFORCEMENT LEARNING POLICY
+    ind_res = simulator(PROB_DATA, distributions, rl_policy, kwargs={'rl_object': RL_APPROX})
+    res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
+    res['policy'].extend(['reinforcement_learning' for j in range(PROB_DATA['total_duration'])])
+    res['param'].extend(['none' for j in range(PROB_DATA['total_duration'])])
+    res['week'].extend(ind_res[0])
+    res['sales'].extend(ind_res[1])
+    res['price'].extend(ind_res[2])
 
 res = pd.DataFrame(res)
 res['revenue'] = res['sales'] * res['price']
