@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.8.6)  15 MAY 2023 23:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.8.6)  15 MAY 2023 23:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -402,23 +402,23 @@ Underfull \hbox (badness 10000) in paragraph at lines 257--264
 
  []
 
-[9] [10] (./manuscript.bbl) [11] (./manuscript.aux)
+[9] [10] [11] (./manuscript.bbl) [12] (./manuscript.aux)
 Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: AB346B70C9DBF71DE91FF18EEAC3891D;3127.
  ) 
 Here is how much of TeX's memory you used:
- 10612 strings out of 478268
- 167570 string characters out of 5846348
+ 10613 strings out of 478268
+ 167577 string characters out of 5846348
  470204 words of memory out of 5000000
  28638 multiletter control sequences out of 15000+600000
  476962 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 60i,11n,63p,412b,335s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 60i,12n,63p,412b,335s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb>
-Output written on manuscript.pdf (13 pages, 446969 bytes).
+Output written on manuscript.pdf (14 pages, 447957 bytes).
 PDF statistics:
- 248 PDF objects out of 1000 (max. 8388607)
- 206 compressed objects within 3 object streams
- 43 named destinations out of 1000 (max. 500000)
+ 252 PDF objects out of 1000 (max. 8388607)
+ 209 compressed objects within 3 object streams
+ 44 named destinations out of 1000 (max. 500000)
  163 words of extra memory for PDF output out of 10000 (max. 10000000)
 

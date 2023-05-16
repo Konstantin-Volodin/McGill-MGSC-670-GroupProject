@@ -231,24 +231,24 @@ The generated numbers reflect the data distribution found within the historical 
 \end{itemize}
 
 \begin{algorithmic}[1]
-    \Procedure{Simulate}{$means\ per\ price,\ stdev\ per\ price$}
-        \For{week in length($means\ per\ price$)}
-            \State \textbf{generate} unit sales \textbf{with} mean, stdev
-        \EndFor
-        \State \textbf{return} unit sales
-    \EndProcedure
-    \State 
-    \Procedure{Test Policy}{$policy,\ list\ of\ unit\ sales$}
-        \For{t = 1 to 15}
-            \State \textbf{generate} price at week t+1 from $policy$ logic
-        \EndFor
-        \State \textbf{return} price at week t+1
+    \Procedure{Policy}{$list\ of\ sales,\ list\ of\ price$}
+        \State \textbf{generate} price for the next period \textbf{with} current run sales and prices
+        \State \textbf{return} price
     \EndProcedure
     \State
-    \For{policy in policy candidate list}
+    \Procedure{Simulate}{$policy,\ means\ per\ price, stdevs\ per\ price$}
+        \For{t = 1 to 15}
+            \State \textbf{generate} unit sales \textbf{with} mean, stdev, and current price
+            \State \textbf{generate} price \textbf{for} next period \textbf{with} given policy
+        \EndFor
+        \State \textbf{return} revenue
+    \EndProcedure 
+    \State
+    \For{policy \textbf{in} policy candidate list}
         \For{t = 1 to 100}
-            \State list of unit sales = $Simulate$ (price mean, price stdev) 
-            \State policy results = $Test\ Policy$ (policy, list of unit sales) 
+            \State \textbf{generate} means per price, stdevs per price \textbf{for} current simulation run 
+            \State policy results = $Simulate$ (policy, means per price, stdevs per price) 
+            \State \textbf{save} policy results
         \EndFor
     \EndFor
 \end{algorithmic}
@@ -268,9 +268,12 @@ Each policy is tested in real-time against the app while recording the results t
 
 \begin{algorithmic}[1]
     \Procedure{Policy Validate}{$policy$}
-        \State URL = "http://www.randhawa.us/games/retailer/nyu.html"
-        \State expected return = \textbf{with} URL \textbf{use} $policy$ for t+1 decision
-        \State \textbf{return} expected return
+    \State URL = "http://www.randhawa.us/games/retailer/nyu.html"
+    \For{ t= 1 to 15}
+        \State \textbf{retrieve} unit sales \textbf{from} website
+        \State \textbf{generate} price \textbf{for} next period \textbf{with} given policy
+    \EndFor
+    \State \textbf{return} expected return
     \EndProcedure
     \State
     \For{policy in policy candidate list}
@@ -287,6 +290,17 @@ Each policy is tested in real-time against the app while recording the results t
 In this report, we proposed eight various pricing strategies including heuristic, probability-based, traditional moving average, and reinforcement learning approaches. 
 All except the reinforcement learning approach were simulated and validated on the web app. 
 Based on the simulation results in Figure 3, Naïve Adaptive Likelihood Policy provides the highest average revenue followed by likelihood shared.
+
+Figure 5 demonstrates the relationship between prices and sales in different policies. 
+Policies with better performance such as Naïve Adaptive Likelihood, Likelihood Demand Trend Projection, and Moving Average Naïve, share a common characteristic: adopting price change steadily. 
+These models take more time waiting and observing the market before adjusting prices accordingly. 
+Conversely, Long Term Adaptive Moving Average and Adaptive likelihood price policy tend to lower the price immediately once the product is not in great demand. 
+These policies often drop prices around week 6 to week 8 and significantly increase sales afterward. 
+Yet, with discounted prices, the average revenue does not outperform others. 
+Figure 6 demonstrates the weekly sales figures for each model and validates this observation. 
+For instance, the average long-term policy drops the price around 8 weeks for an immediate sales increase, but quickly panics and keeps lowering the price until the 40\% discount is reached. 
+The models with a slower price markdown strategy perform best in total revenue generation. 
+
 
 \subsection{Recommended Policy}
 
