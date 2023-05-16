@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.8.6)  16 MAY 2023 00:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.8.6)  16 MAY 2023 01:45
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -397,28 +397,83 @@ Underfull \hbox (badness 1281) in paragraph at lines 97--104
 []\OT1/cmr/m/n/10.95 Airline car-ri-ers started man-ag-ing dis-counted fares back in the 1970s ac-cord-ing to
  []
 
-[2 <./pic/f2.png>] [3] [4] [5] [6] [7] [8] [9]
-Underfull \hbox (badness 10000) in paragraph at lines 258--265
+[2 <./pic/f2.png>] [3] [4]
+<pic/f3.png, id=154, 274.02374pt x 361.35pt>
+File: pic/f3.png Graphic file (type png)
+<use pic/f3.png>
+Package pdftex.def Info: pic/f3.png  used on input line 149.
+(pdftex.def)             Requested size: 226.48395pt x 298.66328pt.
+ [5 <./pic/f3.png>] [6]
+<pic/f4.png, id=167, 294.95193pt x 361.35pt>
+File: pic/f4.png Graphic file (type png)
+<use pic/f4.png>
+Package pdftex.def Info: pic/f4.png  used on input line 186.
+(pdftex.def)             Requested size: 226.48395pt x 277.47946pt.
+ [7 <./pic/f4.png>] [8] [9] [10] [11]
+Underfull \hbox (badness 10000) in paragraph at lines 331--339
 
  []
 
-[10] [11] [12] (./manuscript.bbl) [13] (./manuscript.aux)
+[12]
+<pic/f5.png, id=200, 1505.625pt x 903.375pt>
+File: pic/f5.png Graphic file (type png)
+<use pic/f5.png>
+Package pdftex.def Info: pic/f5.png  used on input line 342.
+(pdftex.def)             Requested size: 339.72592pt x 203.82954pt.
+<pic/f6.png, id=201, 1505.625pt x 903.375pt>
+File: pic/f6.png Graphic file (type png)
+<use pic/f6.png>
+Package pdftex.def Info: pic/f6.png  used on input line 348.
+(pdftex.def)             Requested size: 339.72592pt x 203.82954pt.
+ [13 <./pic/f5.png> <./pic/f6.png>]
+<pic/f7.png, id=210, 1806.75pt x 903.375pt>
+File: pic/f7.png Graphic file (type png)
+<use pic/f7.png>
+Package pdftex.def Info: pic/f7.png  used on input line 355.
+(pdftex.def)             Requested size: 339.72592pt x 169.86485pt.
+<pic/f8.png, id=211, 1505.625pt x 903.375pt>
+File: pic/f8.png Graphic file (type png)
+<use pic/f8.png>
+Package pdftex.def Info: pic/f8.png  used on input line 361.
+(pdftex.def)             Requested size: 339.72592pt x 203.82954pt.
+ [14 <./pic/f7.png> <./pic/f8.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 372--377
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 372--377
+
+ []
+
+[15]
+<pic/f9.png, id=224, 1806.75pt x 903.375pt>
+File: pic/f9.png Graphic file (type png)
+<use pic/f9.png>
+Package pdftex.def Info: pic/f9.png  used on input line 380.
+(pdftex.def)             Requested size: 385.02547pt x 192.51257pt.
+<pic/f10.png, id=225, 1806.75pt x 903.375pt>
+File: pic/f10.png Graphic file (type png)
+<use pic/f10.png>
+Package pdftex.def Info: pic/f10.png  used on input line 386.
+(pdftex.def)             Requested size: 385.02547pt x 192.51257pt.
+ [16 <./pic/f9.png> <./pic/f10.png>] (./manuscript.bbl) [17] (./manuscript.aux)
 Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: AB346B70C9DBF71DE91FF18EEAC3891D;3127.
  ) 
 Here is how much of TeX's memory you used:
- 10614 strings out of 478268
- 167584 string characters out of 5846348
- 470204 words of memory out of 5000000
- 28638 multiletter control sequences out of 15000+600000
+ 10682 strings out of 478268
+ 168460 string characters out of 5846348
+ 471204 words of memory out of 5000000
+ 28686 multiletter control sequences out of 15000+600000
  476962 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 60i,12n,63p,412b,335s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 60i,12n,63p,412b,449s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb>
-Output written on manuscript.pdf (15 pages, 448275 bytes).
+Output written on manuscript.pdf (19 pages, 1029917 bytes).
 PDF statistics:
- 256 PDF objects out of 1000 (max. 8388607)
- 212 compressed objects within 3 object streams
- 45 named destinations out of 1000 (max. 500000)
- 163 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 299 PDF objects out of 1000 (max. 8388607)
+ 235 compressed objects within 3 object streams
+ 57 named destinations out of 1000 (max. 500000)
+ 203 words of extra memory for PDF output out of 10000 (max. 10000000)
 
