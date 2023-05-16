@@ -111,9 +111,9 @@ The model produced a 6\% or \$90M increase in sales revenue throughout the store
 The approach allows for a scalable, simple and reliable method to set pricing. 
 
 \section{Proposed Strategies}
-The literature and background on this web app pricing markdown structure suggest that revenue management is more complex than a one-size-fits-all approach. 
+The literature on this web app pricing markdown structure suggest that revenue management is more complex than a one-size-fits-all approach. 
 Several strategies or pricing policies may be appropriate for benchmarking and discovering an optimal or compromising strategy.
-We will investigate several markdown or price change methods to understand their impact and potential application. 
+We will investigate several markdown and price change methods to understand their impact and potential application. 
 We will evaluate the results using a simulation and web app validation. 
 The simulation of the price and demand is done via a randomized sales distribution generated from mean price, standard deviation, and random number generation. 
 Meanwhile the validation comes from a crosswalk code that interacts with the model and web app.
@@ -129,8 +129,8 @@ Empirically we have observed that if the 40\% discount is offered early all unit
 The distribution of revenue should largely follow the distribution of the 40\% off price distribution we have observed.
 
 \subsection{Baseline Model - Price Consistency}
-The second strategy we will investigate a naïve approach to markdown strategies: do not change the price. 
-We consider this a baseline policy as this is the easiest to follow and requires no intervention on the price. 
+The second strategy, we investigate a naïve approach to markdown strategies: do not change the price. 
+We consider this a baseline policy as this is the easiest to follow and it does not require any price manipulation. 
 While this policy ensures each item is sold at the highest price, it will likely leave unsold products. 
 This naïve model is useful as a comparison point for the average revenue and standard deviation. 
 In other words, the naïve “do nothing” model is a baseline to compare against and build off. 
@@ -139,10 +139,10 @@ The optimal price over the 15 weeks may be the original set price of \$60 or may
 We expect a highly varied revenue with a high standard deviation from this model that could be more consistent and optimal than the \emph{perfect foresight strategy}.
 
 \subsection{Naïve Adaptive Likelihood Policy}
-The next policy we will investigate is a naïve adaptive likelihood method. 
+The next policy we investigate is a naïve adaptive likelihood method. 
 This policy uses the previously observed data to predict the likelihood that given the current price the inventory will sell out. 
 If at time t the inventory is not likely to sell out, the model investigates the remaining price choices and selects the first discount that gives a high probability of inventory sell out. 
-For instance, at week 5 the model determines that the sales are not likely to lead to sell out, the 10\% , 20\% and 40\% are all likely to lead to inventory sell out, so the model adjusts the \% off to 10\% to stimulate sales. 
+For instance, at week 5 the model determines that the sales are not likely to lead to sell out, but the 10\% , 20\% and 40\% markdowns are all likely to lead to inventory sell out, so the model adjusts the \% off to 10\% to stimulate sales. 
 
 We expect this model to have a high consistency of difference between revenue and the \emph{perfect foresight strategy}, with higher revenue than the baseline model and potential room for improvement.
 
@@ -166,11 +166,12 @@ In other words, if the estimated units sold by the end of the 15 weeks is less t
 We expect this model to produce a more consistent difference between revenue and the \emph{perfect foresight strategy} with a higher average revenue than the naïve adaptive likelihood policy.
 
 \subsection{Short-term Moving Average Naïve}
-Next, we will investigate a naive moving average approach. 
+Next, we investigate a naive moving average approach. 
 In this approach the previous 3-day demand is accumulated into a moving average to forecast demand for time t+1. 
 The 3-day average helps smooth any randomness in the demand curve due to noise. 
 The function considers the momentum of previous 3 week of sales to determine if the current trajectory of sales will result in no inventory at the end of the 15-week period. 
 If the sales momentum from the previous 3 days is lower than the average number of units needed to sell out by the end of the period, the price is dropped. 
+
 Let’s consider an example: at week 4, the previous 3 weeks sales average is 100 units per week. There are 1,700 units left. 
 The average sales needed to sell out of inventory is 141 units (1,700 units / 12 weeks). 
 Since the moving average sales (100 per week) is below the required 141 sales per week the model will lower the price. 
@@ -185,10 +186,10 @@ This model is likely better than the baseline but could be better as the price h
 The final policy we will investigate is an adaptive moving average with a policy. 
 This policy is similar to the naïve moving average policy with added levels of complexity. 
 The moving average is used to predict the total sales over the remaining time and compares it to the remaining amount. 
-If the predicted sales are less than the remaining total remaining amount at time t then the price will decrease in an effort to increase unit sales. 
-This method unlike the previous one helps smooth out the randomness in the data more so than the previous short term moving average policy. 
+If the predicted sales (in units) for the future periods is lower than the total remaining units in inventory, then the price will decrease in an effort to increase sales. 
+Unlike the previous methods, this strategy helps smooth out the randomness in the data more so than the previous short term moving average policy. 
 
-We expect this model to have a lower difference consistency than the short-term naïve average, since it is likely that more of the units sold will be at different price points more quickly whereas the average model will have a slower price evolution. 
+We expect this model to have a lower difference consistency than the short-term naïve average, since it is likely that more of the units sold will reach different price points faster than the average model price evolution. 
 However, we also expect this model to have the highest average revenue of all models.
 
 \subsection{Reinforcement Learning}
@@ -196,7 +197,7 @@ A proposed final future state policy is the reinforcement learning strategy.
 Artificial intelligence models rely on supervised reinforcement learning which learn as they go. 
 The models are rewarded for certain actions and attempt to maximize the reward, relying on previous runs or iterations to build off of. 
 These models are ideal for repeated tasks that have defined conditions. For example, Open Ai in 2019 demonstrated a reinforcement learning model that simulated a game of hide and seek \cite{baker2019emergent}. 
-We will apply reinforcement learning to this problem, where the reward function is the maximization of the revenue, and the inputs are the app itself. 
+We will apply reinforcement learning to this problem, where the reward function is the maximization of the revenue, and the inputs are from the app itself. 
 While this model offers little explanation ability since rl models are black box models, the reinforcement learning policy may perform better than previous policies.
 
 We expect that the reinforcement learning model will have the highest revenue and the lowest revenue distribution of all models previously tested.
@@ -300,7 +301,6 @@ Yet, with discounted prices, the average revenue does not outperform others.
 Figure 6 demonstrates the weekly sales figures for each model and validates this observation. 
 For instance, the average long-term policy drops the price around 8 weeks for an immediate sales increase, but quickly panics and keeps lowering the price until the 40\% discount is reached. 
 The models with a slower price markdown strategy perform best in total revenue generation. 
-
 
 \subsection{Recommended Policy}
 
