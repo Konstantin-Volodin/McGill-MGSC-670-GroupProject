@@ -15,6 +15,7 @@ from modules.policies import (baseline_policy,
                               moving_avg_longterm,
                               moving_avg_shorterm,
                               likelihood_naive,
+                              likelihood_shared_distribution,
                               likelihood_price_dependency,
                               random_policy,
                               rl_policy)
@@ -36,7 +37,7 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
 # %%
 # SIMULATION
 res = {'repl': [], 'week': [], 'sales': [], 'price': [], 'policy': [], 'param': []}
-for i in tqdm(range(100)):
+for i in tqdm(range(300)):
     distributions = {60: {'mean': max(npr.normal(DF_DIST[60]['mean_mean'],
                                                  DF_DIST[60]['mean_sd']), 0),
                           'sd': max(npr.normal(DF_DIST[60]['sd_mean'],
@@ -87,11 +88,24 @@ for i in tqdm(range(100)):
         res['price'].extend(ind_res[2])
 
     # NAIVE LIKELIHOOD POLICY
-    LIKELIHOOD_ESTIMATOR_PROB_OPTIONS = np.linspace(0, 1, 51)
+    LIKELIHOOD_ESTIMATOR_PROB_OPTIONS = np.linspace(0, 1, 101)
     for LIKELIHOOD_ESTIMATOR_PROB in LIKELIHOOD_ESTIMATOR_PROB_OPTIONS:
         ind_res = simulator(PROB_DATA, distributions, likelihood_naive, kwargs={'req_likelihood': LIKELIHOOD_ESTIMATOR_PROB})
         res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
         res['policy'].extend(['likelihood_naive' for j in range(PROB_DATA['total_duration'])])
+        res['param'].extend([LIKELIHOOD_ESTIMATOR_PROB for j in range(PROB_DATA['total_duration'])])
+        res['week'].extend(ind_res[0])
+        res['sales'].extend(ind_res[1])
+        res['price'].extend(ind_res[2])
+
+    # SHARED LIKELIHOOD POLICY
+    LIKELIHOOD_ESTIMATOR_PROB_OPTIONS = np.linspace(0, 1, 101)
+    for LIKELIHOOD_ESTIMATOR_PROB in LIKELIHOOD_ESTIMATOR_PROB_OPTIONS:
+        ind_res = simulator(PROB_DATA, distributions, likelihood_shared_distribution,
+                            kwargs={'req_likelihood': LIKELIHOOD_ESTIMATOR_PROB,
+                                    'mean_dependency': MEAN_DEPENDENCY, 'sd_dependency': SD_DEPENDENCY})
+        res['repl'].extend([i for j in range(PROB_DATA['total_duration'])])
+        res['policy'].extend(['likelihood_shared' for j in range(PROB_DATA['total_duration'])])
         res['param'].extend([LIKELIHOOD_ESTIMATOR_PROB for j in range(PROB_DATA['total_duration'])])
         res['week'].extend(ind_res[0])
         res['sales'].extend(ind_res[1])
@@ -124,13 +138,13 @@ res_agg = res.groupby(['policy', 'param', 'repl']).agg({'revenue': 'sum'}).reset
 res_agg = res_agg.groupby(['policy', 'param']).agg({'revenue': ['mean', 'std']}).reset_index()
 res_agg.columns = ['policy', 'param', 'revenue_mean', 'revenue_sd']
 res_agg.sort_values('revenue_mean')
-
+res_agg.loc[res_agg.groupby('policy')['revenue_mean'].idxmax()]
 
 # %% Clean Up Results
 res_baseline = res.query(f'policy == "baseline"')
 res_baseline['cum_revenue'] = res_baseline.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_moving_avg_longterm = res.query(f'policy == "moving_avg_longterm" and param == 6')
+res_moving_avg_longterm = res.query(f'policy == "moving_avg_longterm" and param == 7')
 res_moving_avg_longterm['cum_revenue'] = res_moving_avg_longterm.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_moving_avg_shorterm = res.query(f'policy == "moving_avg_shorterm" and param == 3')
@@ -138,6 +152,9 @@ res_moving_avg_shorterm['cum_revenue'] = res_moving_avg_shorterm.groupby('repl')
 
 res_likelihood_naive = res.query(f'policy == "likelihood_naive" and param == 0.04')
 res_likelihood_naive['cum_revenue'] = res_likelihood_naive.groupby('repl')['revenue'].transform(pd.Series.cumsum)
+
+res_likelihood_shared = res.query(f'policy == "likelihood_shared" and param == 0.03')
+res_likelihood_shared['cum_revenue'] = res_likelihood_shared.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_likelihood_price = res.query(f'policy == "likelihood_price"')
 res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['revenue'].transform(pd.Series.cumsum)
@@ -152,6 +169,7 @@ res_all = pd.concat([res_baseline,
                      res_moving_avg_longterm,
                      res_moving_avg_shorterm,
                      res_likelihood_naive,
+                     res_likelihood_shared,
                      res_likelihood_price,
                      res_random,
                      res_rl])
@@ -192,6 +210,10 @@ fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_naiv
                          y=res_all_agg_versus.query(f'policy == "likelihood_naive"').price,
                          name='price_likelihood_naive',
                          mode='lines'), row=2, col=2)
+fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_shared"').week,
+                         y=res_all_agg_versus.query(f'policy == "likelihood_shared"').price,
+                         name='likelihood_shared',
+                         mode='lines'), row=2, col=3)
 fig.add_trace(go.Scatter(x=res_all_agg_versus.query(f'policy == "likelihood_price"').week,
                          y=res_all_agg_versus.query(f'policy == "likelihood_price"').price,
                          name='price_likelihood_price',

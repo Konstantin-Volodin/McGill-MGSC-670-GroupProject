@@ -18,7 +18,7 @@ def moving_avg_longterm(problem_dat, actions, sales, prices, **kwargs):
     N = kwargs['kwargs']['num_observation']
     if curr_week <= N:
         return curr_price
-    
+
     sales_pred = sales.copy()
     for i in range(curr_week, problem_dat['total_duration']):
         new_demand = np.round(sum(sales_pred[i-3:i])/3)
@@ -30,6 +30,7 @@ def moving_avg_longterm(problem_dat, actions, sales, prices, **kwargs):
     else:
         return (actions[curr_price][0])
 
+
 def moving_avg_shorterm(problem_dat, actions, sales, prices, **kwargs):
 
     # Get Price Relevant Data
@@ -40,7 +41,7 @@ def moving_avg_shorterm(problem_dat, actions, sales, prices, **kwargs):
     N = kwargs['kwargs']['num_observation']
     if curr_week <= N:
         return curr_price
-    
+
     indexes = np.where(np.array(prices) == curr_price)[0]
     # If need to gather more data
     if len(indexes) < 3:
@@ -87,6 +88,76 @@ def likelihood_naive(problem_dat, actions, sales, prices, **kwargs):
     else:
         return (actions[curr_price][0])
 
+
+def likelihood_shared_distribution(problem_dat, actions, sales, prices, **kwargs):
+
+    # Get Price Relevant Data
+    curr_price = prices[-1]
+
+    # Normalize sales to 60 prices
+    normalized_sales = []
+    if curr_price == 60:
+        normalized_sales = sales
+
+    # Normalize sales to 54 prices
+    elif curr_price == 54:
+        indexes = np.array(np.where(np.array(prices) == 60)[0])
+        vals = np.array(sales)[indexes] * kwargs['kwargs']['mean_dependency'][(60, 54)]
+        normalized_sales.extend(vals)
+
+        indexes = np.array(np.where(np.array(prices) == 54)[0])
+        vals = np.array(sales)[indexes]
+        normalized_sales.extend(vals)
+
+    # Normalize sales to 48 prices
+    elif curr_price == 48:
+        indexes = np.array(np.where(np.array(prices) == 60)[0])
+        vals = np.array(sales)[indexes] * kwargs['kwargs']['mean_dependency'][(60, 48)]
+        normalized_sales.extend(vals)
+
+        indexes = np.array(np.where(np.array(prices) == 54)[0])
+        vals = np.array(sales)[indexes] * kwargs['kwargs']['mean_dependency'][(54, 48)]
+        normalized_sales.extend(vals)
+
+        indexes = np.array(np.where(np.array(prices) == 48)[0])
+        vals = np.array(sales)[indexes]
+        normalized_sales.extend(vals)
+
+    # Normalize sales to 36 prices
+    elif curr_price == 36:
+        indexes = np.array(np.where(np.array(prices) == 60)[0])
+        vals = np.array(sales)[indexes] * kwargs['kwargs']['mean_dependency'][(60, 36)]
+        normalized_sales.extend(vals)
+
+        indexes = np.array(np.where(np.array(prices) == 54)[0])
+        vals = np.array(sales)[indexes] * kwargs['kwargs']['mean_dependency'][(54, 36)]
+        normalized_sales.extend(vals)
+
+        indexes = np.array(np.where(np.array(prices) == 48)[0])
+        vals = np.array(sales)[indexes] * kwargs['kwargs']['mean_dependency'][(48, 36)]
+        normalized_sales.extend(vals)
+
+        indexes = np.array(np.where(np.array(prices) == 36)[0])
+        vals = np.array(sales)[indexes]
+        normalized_sales.extend(vals)
+
+    # Get Distribution Estimate
+    curr_mean = np.mean(np.array(normalized_sales))
+    curr_sd = np.std(np.array(normalized_sales))
+
+    # Get Sales Requirements
+    left_over_inv = problem_dat['start_inventory'] - sum(sales)
+    daily_req = left_over_inv/(problem_dat['total_duration']-len(sales))
+
+    # Check if probability meets it
+    prob_it_fits = 1-scs.norm.cdf(daily_req, loc=curr_mean, scale=curr_sd)
+
+    if prob_it_fits < kwargs['kwargs']['req_likelihood'] and curr_price != 36:
+        return (actions[curr_price][1])
+    else:
+        return (actions[curr_price][0])
+
+
 def likelihood_price_dependency(problem_dat, actions, sales, prices, **kwargs):
 
     # Get Price Relevant Data
@@ -96,7 +167,7 @@ def likelihood_price_dependency(problem_dat, actions, sales, prices, **kwargs):
     # If need to gather more data
     if len(indexes) <= 1 or curr_price == 36:
         return (curr_price)
-    
+
     # Get Distribution Estimate (Current and Next)
     curr_mean = np.mean(np.array(sales)[indexes])
     curr_sd = np.std(np.array(sales)[indexes])
@@ -150,8 +221,8 @@ def likelihood_price_dependency(problem_dat, actions, sales, prices, **kwargs):
 def rl_policy(problem_dat, actions, sales, prices, **kwargs):
 
     # Mapping
-    _action_to_price = {0: 60, 1: 54, 2: 48,3: 36,}
-    _price_to_action = {60:0, 54:1, 48:2, 36:3}
+    _action_to_price = {0: 60, 1: 54, 2: 48, 3: 36, }
+    _price_to_action = {60: 0, 54: 1, 48: 2, 36: 3}
 
     # Get Action
     q_table = kwargs['kwargs']['q_table']
@@ -161,8 +232,8 @@ def rl_policy(problem_dat, actions, sales, prices, **kwargs):
     curr_week = len(sales) - 1
     tot_sales = int(np.sum(sales))
     new_action = np.argmax(q_table[curr_week, curr_action, curr_sales, tot_sales])
-    
+
     if new_action >= curr_action:
-        return(_action_to_price[new_action])
+        return (_action_to_price[new_action])
     else:
-        return(_action_to_price[curr_action])
+        return (_action_to_price[curr_action])
