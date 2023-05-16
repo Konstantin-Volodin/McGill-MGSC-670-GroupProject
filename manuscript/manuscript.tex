@@ -168,8 +168,9 @@ The likelihood demand trend projection policy is an adaptive likelihood method t
 The given data suggests that each price reduction has a compounding effect on the unit volume sold. 
 For instance, 10\% off increases unit sales by 30\%, and 20\% increases unit sales by 75\% compared to previous periods. 
 The model uses rules based on the sales increase per price category to estimate the unit sales for the remaining periods. 
-To accomplish this the price distribution for the current model is added to the observed price distributions and the model evaluates the estimated likelihood of “out of stock condition”. 
+To accomplish this, the price distribution for the current model is added to the observed price distributions and the model evaluates the estimated likelihood of “out of stock condition”. 
 In other words, if the estimated units sold by the end of the 15 weeks is less than the remaining units, the model increases the discount to stimulate the forecasted demand. 
+Therefore, this approach is an improved version of the naïve adaptive likelihood method with additional assumptions on the demand’s behavior.
 
 We expect this model to produce a more consistent difference between revenue and the \emph{perfect foresight strategy} with a higher average revenue than the naïve adaptive likelihood policy.
 
@@ -180,12 +181,18 @@ The 3-day average helps smooth any randomness in the demand curve due to noise.
 The function considers the momentum of previous 3 week of sales to determine if the current trajectory of sales will result in no inventory at the end of the 15-week period. 
 If the sales momentum from the previous 3 days is lower than the average number of units needed to sell out by the end of the period, the price is dropped. 
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{pic/f4.png}
+    \caption{Naïve Adaptative Likelihood Policy Decision Tree}
+\end{figure}
+
 Let’s consider an example: at week 4, the previous 3 weeks sales average is 100 units per week. There are 1,700 units left. 
 The average sales needed to sell out of inventory is 141 units (1,700 units / 12 weeks). 
 Since the moving average sales (100 per week) is below the required 141 sales per week the model will lower the price. 
 The model will then wait 3 weeks to allow the new policy to take shape before re-examining a price decrease. 
-The same factors will help decide whether to lower the price once again or not. 
-This simple model accounts for the randomness of demand and helps to ensure more unit sales by valuing unit sales momentum over optimal price strategy.
+The same factors will help decide whether to lower the price again or not. 
+This simple model accounts for the randomness of demand and helps ensure more sales by valuing sales momentum over optimal price strategy.
 
 We expect this model to have a higher consistency than the baseline mode, lower the price quickly to the lowest amount and consistently sell out of all units.  
 This model is likely better than the baseline but could be better as the price has a maximum decrease speed.
@@ -231,7 +238,7 @@ Since we cannot access the exact equation or similar random number generator use
 The model built takes the policy, the average and the standard deviation of the observed price points and generates 100 simulations. 
 For each simulation and each time t, the model generates unit sales based on a numpy random normal method using the mean and standard deviation of the current price point. 
 The simulation approach best reflects a real-life scenario as a forecast function is generally unknown, resulting in a reliance on past data to predict future demand. 
-The generated numbers reflect the data distribution found within the historical data.\\
+The generated numbers reflect the data distribution found within the historical data.
 
 \begin{itemize}[leftmargin=*]
     \item Pseudo Code of Simulation Approach and Validation
@@ -294,9 +301,9 @@ Each policy is tested in real-time against the app while recording the results t
 \section{Discussion and Recommendations}
 
 \subsection{Policy Comparison}
-In this report, we proposed eight various pricing strategies including heuristic, probability-based, traditional moving average, and reinforcement learning approaches. 
+In this report, we proposed eight different pricing strategies including heuristic, probability-based, traditional moving average, and reinforcement learning approaches. 
 All except the reinforcement learning approach were simulated and validated on the web app. 
-Based on the simulation results in Figure 3, Naïve Adaptive Likelihood Policy provides the highest average revenue followed by likelihood shared.
+Based on the simulation results in Figure 5, Naïve Adaptive Likelihood Policy provides the highest average revenue followed by likelihood shared.
 
 Figure 5 demonstrates the relationship between prices and sales in different policies. 
 Policies with better performance such as Naïve Adaptive Likelihood, Likelihood Demand Trend Projection, and Moving Average Naïve, share a common characteristic: adopting price change steadily. 
@@ -305,10 +312,80 @@ Conversely, Long Term Adaptive Moving Average and Adaptive likelihood price poli
 These policies often drop prices around week 6 to week 8 and significantly increase sales afterward. 
 Yet, with discounted prices, the average revenue does not outperform others. 
 Figure 6 demonstrates the weekly sales figures for each model and validates this observation. 
-For instance, the average long-term policy drops the price around 8 week for an immediate sales increase, but quickly panics and keeps lowering the price until the 40\% discount is reached. 
-The models with a slower price markdown strategy perform best in total revenue generation. 
+For instance, the average long-term policy drops the price around the 8th week for an immediate sales increase, but quickly panics and keeps lowering the price until the 40\% discount is reached. 
+The models with a slower price markdown strategy perform best in total revenue generation.
 
+In addition to the maximization of revenue, model consistency is another key aspect of the models. 
+Suggesting a markdown strategy with a high level of variability will likely create more issues than it solves.  
+Figures 7 and 8 demonstrate the model predictions’ consistency or lack thereof.  
+In Figure 9, the most consistent strategy is the random choice policy. 
+The conditional probability of selecting 40\% within the first 2 turns is 43\% based on the rules of the web app which prevent prices from changing once the 40\% discount is given. 
+The randomness model generates an average of \$80k, much lower than all other models except the baseline. 
+The baseline model, meanwhile, has a broad range of revenue values, as seen by the value of the IQR, which is approximately \$20k. 
+This is likely a direct reflection of the randomness introduced into the model to simulate demand. 
+All other models have a lower range of values and, thus, are more consistent than the baseline policy. 
+The likelihood price policy demonstrates the best consistency of values with an IQR of approximately \$10k. 
+Therefore 50\% of all models run with this policy will have a revenue of \$73-\$83k.  
+Consistency of revenue prediction is equally important to the total revenue.
+
+Each model and policy have their own logic and results. 
+The baseline and random functions offer little in consistency or maximizing revenue, respectively. 
+These two models represent the two extremes of the desired model characteristics that maximize revenue and minimize spread. 
+Neither characteristic alone appears sufficiently robust to recommend as a strategy with a retail firm. 
+All other models offer a more nuanced approach to balancing the revenue and spread. 
+The remaining policies can be grouped into either a slow change in sale price or a quick change in sale price. 
+The slower-moving sales balance revenue generation and distribution after 15 weeks. 
+Finally, we recommend a policy based on those presented above.\\
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{pic/f5.png}
+    \caption{Average Cumulative Revenue by Policy and Week}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{pic/f6.png}
+    \caption{Average Weekly Revenue by Policy, and Week with Line of Unit Prices}
+\end{figure}
+\pagebreak
+\hfill \break
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{pic/f7.png}
+    \caption{Whisker Plot per Policy based on Revenue Distribution from 100 Simulated Runs. Note: Optimal Revenue for the run depends on Random Seed but is approximately \$100k}
+\end{figure}
+\hfill \break
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{pic/f8.png}
+    \caption{Combination of Bar Chart with approximated Normal Distribution overlay and Rug Chart for Distribution of Simulated Revenue based on Policy}
+\end{figure}
+
+\pagebreak
 \subsection{Recommended Policy}
+Based on the comparison and results from validation, we recommend adopting the likelihood naïve policy. 
+As figure 8 illustrates, once the policies are validated using the web app the likelihood naïve policy best balances the high revenue, with a median of \$95K and an IQR or \$15K. 
+The next best policy, the Likelihood Demand Trend Projection or colloquially known as the likelihood shared model has a median of \$100k but an IQR of \$20k. 
+Between the two best models observed the naïve likelihood policy produces consistently higher returns than the other strategies. Furthermore, based on Figure 10 the naïve likelihood model minimizes the difference between the perfect strategy with a medial of 2.5\% difference. 
+
+There is no perfect approach to modeling a fashion retailer’s markdown strategy. The underlying functions and randomness of the real world are too difficult for even the best simulations. 
+However, using data science and a trial-and-error approach we can conclude that of the tested models, the best approach to approximating fashion retailer’s markdown strategy is a naïve pricing model where the price distribution is the most likely to lead to inventory sell out. 
+\pagebreak
+\hfill \break
+\hfill \break
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{pic/f9.png}
+    \caption{Validation: Revenue Distribution}
+\end{figure}
+\hfill \break
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{pic/f10.png}
+    \caption{Validation: Difference Distribution}
+\end{figure}
 
 \pagebreak
 \bibliographystyle{apalike}
