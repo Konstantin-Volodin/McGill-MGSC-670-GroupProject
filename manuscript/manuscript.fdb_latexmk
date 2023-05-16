@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex manuscript"] 1684215763 "manuscript.aux" "manuscript.bbl" "manuscript" 1684215907
+["bibtex manuscript"] 1684215763 "manuscript.aux" "manuscript.bbl" "manuscript" 1684216040
   "/usr/local/texlive/2022/texmf-dist/bibtex/bst/base/apalike.bst" 1292289607 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "manuscript.aux" 1684215907 5712 b7b64b3edba8209550887382f4fcc937 "pdflatex"
+  "manuscript.aux" 1684216040 5712 b7b64b3edba8209550887382f4fcc937 "pdflatex"
   "ref.bib" 1684204630 2199 8f7d6e89dd22bc11600c19849dd8945d ""
   (generated)
   "manuscript.bbl"
   "manuscript.blg"
-["pdflatex"] 1684215905 "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" "manuscript.pdf" "manuscript" 1684215907
-  "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" 1684215905 26725 1c4ac56d94bfc5bbfdb03715442b3843 ""
+["pdflatex"] 1684216039 "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" "manuscript.pdf" "manuscript" 1684216040
+  "/Users/ylfaliang/Documents/GitHub/McGill-MGSC-670-GroupProject/manuscript/manuscript.tex" 1684216039 26725 19f5e3cb11f3d8f459a96cbedcd7b6b6 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1136768653 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -103,15 +103,15 @@
   "/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1647878959 4410336 7d30a02e9fa9a16d7d1f8d037ba69641 ""
   "/usr/local/texlive/2022/texmf-var/web2c/pdftex/pdflatex.fmt" 1659809088 2826433 923beec1f9aae17873bf44a1e728bc26 ""
   "/usr/local/texlive/2022/texmf.cnf" 1647878952 577 209b46be99c9075fd74d4c0369380e8c ""
-  "manuscript.aux" 1684215907 5712 b7b64b3edba8209550887382f4fcc937 "pdflatex"
+  "manuscript.aux" 1684216040 5712 b7b64b3edba8209550887382f4fcc937 "pdflatex"
   "manuscript.bbl" 1684215763 1830 30fb70d53c0cfb261ff268540877fad3 "bibtex manuscript"
-  "manuscript.out" 1684215907 3127 ab346b70c9dbf71de91ff18eeac3891d "pdflatex"
-  "manuscript.tex" 1684215905 26725 1c4ac56d94bfc5bbfdb03715442b3843 ""
-  "manuscript.toc" 1684215907 1606 362ca79f141de3be11666f1f28555d21 "pdflatex"
+  "manuscript.out" 1684216040 3127 ab346b70c9dbf71de91ff18eeac3891d "pdflatex"
+  "manuscript.tex" 1684216039 26725 19f5e3cb11f3d8f459a96cbedcd7b6b6 ""
+  "manuscript.toc" 1684216040 1606 362ca79f141de3be11666f1f28555d21 "pdflatex"
   "pic/f1.png" 1684203273 389886 1bc7e84e9cacda3af58b059e2c86749b ""
   "pic/f10.png" 1684200077 124077 93e74e8456f4ad24bcfe3799696a26d3 ""
   "pic/f2.png" 1684120141 28082 6a3733631f9b509512d9c0499e39b57f ""
-  "pic/f3.png" 1684212325 48360 eb665444ee43b3fa2a67e828eefdce8d ""
+  "pic/f3.png" 1684216004 82597 2921189326e09a2c6532876abd02372d ""
   "pic/f4.png" 1684214439 84293 085686992f52b3fa95513ac2e193c341 ""
   "pic/f5.png" 1684198415 174538 5783ca3daadeeface501203ec44ce70b ""
   "pic/f6.png" 1684198613 134252 8bae903773bc7bfa792b2a65e91b4fd0 ""
