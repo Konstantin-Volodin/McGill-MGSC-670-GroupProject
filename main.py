@@ -49,6 +49,7 @@ for j in policies:
 
     best_pols.append(f"{j}_{ma_best}")
     best_pols.append(f"{j}_{best}")
+best_pols = list(set(best_pols))
 best_pols
 
 # %%
@@ -182,7 +183,7 @@ res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['reve
 res_random = res.query(f'policy == "random"')
 res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_rl = res.query(f'policy == "reinforcement_learning" and param == "ridge_tr_98"')
+res_rl = res.query(f'policy == "reinforcement_learning" and param == "ridge_notr_146"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_all = pd.concat([res_baseline,
