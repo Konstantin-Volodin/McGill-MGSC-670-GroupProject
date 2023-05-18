@@ -36,22 +36,26 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'total_duration': 15}
 
 # GET VARIOUS RL POLICIES
-policies = ['ridge_tr', 'ridge_notr', 'ada_notr', 'ada_tr']
+policies = {'ada_notr': 130,
+            'ridge_notr': 500,
+            'ridge_tr': 500,
+            'ada_tr': 50}
+# %%
 best_pols = []
-for j in policies:
+for k, v in policies.items():
+    print(k)
     reward = []
-    print(j)
-    for i in range(500):
-        with open(f'data/rl_approx_{j}_{i+1}.pkl', 'rb') as inp:
+    for i in range(v):
+        with open(f'data/rl_approx_{k}_{i+1}.pkl', 'rb') as inp:
             reward.append(pickle.load(inp).rev)
 
     ma_best = pd.Series(reward).rolling(7).mean().idxmax()
     best = pd.Series(reward).idxmax()
 
-    best_pols.append(f"{j}_{ma_best}")
-    best_pols.append(f"{j}_{best}")
-
-#%%
+    best_pols.append(f"{k}_{ma_best}")
+    best_pols.append(f"{k}_{best}")
+best_pols
+# %%
 best_pols = list(set(best_pols))
 best_pols_obj = {}
 for pol in best_pols:
@@ -188,7 +192,7 @@ res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['reve
 res_random = res.query(f'policy == "random"')
 res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_rl = res.query(f'policy == "reinforcement_learning" and param == "ada_notr_122"')
+res_rl = res.query(f'policy == "reinforcement_learning" and param == "ridge_notr_309"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_all = pd.concat([res_baseline,

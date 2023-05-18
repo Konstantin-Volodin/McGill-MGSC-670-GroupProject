@@ -11,7 +11,9 @@ import sklearn.preprocessing
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import Ridge
-from sklearn.ensemble import AdaBoostRegressor
+from sklearn.
+from sklearn.ensemble import (AdaBoostRegressor,
+                              GradientBoostingRegressor)
 
 import gymnasium as gym
 from gymnasium import spaces
@@ -43,10 +45,38 @@ class MarkdownEnv(gym.Env):
 
         # State Space
         self.state_space = spaces.Dict({
-            "curr_price": spaces.Discrete(4),
-            "curr_sales": spaces.Discrete(300),
-            "tot_sales": spaces.Discrete(self.start_inv+1),
-            "week": spaces.Discrete(self.tot_dur),
+            "total_sales": spaces.Discrete(2000),
+            "week": spaces.Discrete(self.tot_dur+1),
+            "week0_price": spaces.Discrete(4),
+            "week0_sales": spaces.Discrete(300),
+            "week10_price": spaces.Discrete(4),
+            "week10_sales": spaces.Discrete(300),
+            "week11_price": spaces.Discrete(4),
+            "week11_sales": spaces.Discrete(300),
+            "week12_price": spaces.Discrete(4),
+            "week12_sales": spaces.Discrete(300),
+            "week13_price": spaces.Discrete(4),
+            "week13_sales": spaces.Discrete(300),
+            "week14_price": spaces.Discrete(4),
+            "week14_sales": spaces.Discrete(300),
+            "week1_price": spaces.Discrete(4),
+            "week1_sales": spaces.Discrete(300),
+            "week2_price": spaces.Discrete(4),
+            "week2_sales": spaces.Discrete(300),
+            "week3_price": spaces.Discrete(4),
+            "week3_sales": spaces.Discrete(300),
+            "week4_price": spaces.Discrete(4),
+            "week4_sales": spaces.Discrete(300),
+            "week5_price": spaces.Discrete(4),
+            "week5_sales": spaces.Discrete(300),
+            "week6_price": spaces.Discrete(4),
+            "week6_sales": spaces.Discrete(300),
+            "week7_price": spaces.Discrete(4),
+            "week7_sales": spaces.Discrete(300),
+            "week8_price": spaces.Discrete(4),
+            "week8_sales": spaces.Discrete(300),
+            "week9_price": spaces.Discrete(4),
+            "week9_sales": spaces.Discrete(300),
         })
 
         # Action Space
@@ -58,14 +88,41 @@ class MarkdownEnv(gym.Env):
 
     def _get_state(self):
         return {
-            'curr_price': self.curr_price,
-            'curr_sales': self.sales,
-            'tot_sales': self.tot_sales,
-            'week': self.week,
+            "total_sales": self.tot_sales,
+            "week": self.week,
+            "week0_price": self.price_history[0],
+            "week0_sales": self.sales_history[0],
+            "week10_price": self.price_history[10],
+            "week10_sales": self.sales_history[10],
+            "week11_price": self.price_history[11],
+            "week11_sales": self.sales_history[11],
+            "week12_price": self.price_history[12],
+            "week12_sales": self.sales_history[12],
+            "week13_price": self.price_history[13],
+            "week13_sales": self.sales_history[13],
+            "week14_price": self.price_history[14],
+            "week14_sales": self.sales_history[14],
+            "week1_price": self.price_history[1],
+            "week1_sales": self.sales_history[1],
+            "week2_price": self.price_history[2],
+            "week2_sales": self.sales_history[2],
+            "week3_price": self.price_history[3],
+            "week3_sales": self.sales_history[3],
+            "week4_price": self.price_history[4],
+            "week4_sales": self.sales_history[4],
+            "week5_price": self.price_history[5],
+            "week5_sales": self.sales_history[5],
+            "week6_price": self.price_history[6],
+            "week6_sales": self.sales_history[6],
+            "week7_price": self.price_history[7],
+            "week7_sales": self.sales_history[7],
+            "week8_price": self.price_history[8],
+            "week8_sales": self.sales_history[8],
+            "week9_price": self.price_history[9],
+            "week9_sales": self.sales_history[9],
         }
 
     def reset(self, seed=None):
-        # super().reset(seed=seed)
 
         # Generate Random Distribution
         self.dist = {60: {'mean': max(self.np_random.normal(DF_DIST[60]['mean_mean'],
@@ -78,11 +135,13 @@ class MarkdownEnv(gym.Env):
                               'sd': self.dist[60]['sd'] * SD_DEPENDENCY[(60, opt)], }
 
         # Initialize
-        self.week = 1
+        self.week = 0
+        self.sales_history = {i: -1 for i in range(self.tot_dur)}
+        self.price_history = {i: -1 for i in range(self.tot_dur)}
         self.tot_sales = 0
         self.curr_price = 0
-        self.tot_revenue = 0
         self.curr_inventory = self.start_inv - self.tot_sales
+        self.tot_revenue = 0
 
         # Sales this week
         sales = np.round(self.np_random.normal(
@@ -94,10 +153,11 @@ class MarkdownEnv(gym.Env):
         sales = int(sales)
 
         # Save Inventory Data
-        self.sales = sales
-        self.tot_sales += self.sales
+        self.sales_history[self.week] = sales
+        self.price_history[self.week] = 0
+        self.tot_sales += sales
         self.curr_inventory = self.start_inv - self.tot_sales
-        self.tot_revenue += self.sales * self._action_to_price[self.curr_price]
+        self.tot_revenue += sales * self._action_to_price[self.curr_price]
 
         # Return Data
         state = self._get_state()
@@ -119,10 +179,11 @@ class MarkdownEnv(gym.Env):
 
         # Update State
         self.week += 1
-        self.sales = sales
-        self.tot_sales += self.sales
+        self.sales_history[self.week] = sales
+        self.price_history[self.week] = self.curr_price
+        self.tot_sales += sales
         self.curr_inventory = self.start_inv - self.tot_sales
-        self.tot_revenue += self.sales * self._action_to_price[self.curr_price]
+        self.tot_revenue += sales * self._action_to_price[self.curr_price]
 
         # Return Data
         state = self._get_state()
@@ -133,43 +194,6 @@ class MarkdownEnv(gym.Env):
         reward = self.tot_revenue if terminated else 0
 
         return state, reward, terminated, False
-
-
-class QL_est():
-    """Quantization Estimation"""
-
-    def __init__(self, env, quantizer):
-        self.quantizer = quantizer
-        self.q_val = np.zeros([env.state_space['curr_price'].n,
-                               self.quantizer.n_bins,
-                               self.quantizer.n_bins,
-                               env.state_space['week'].n,
-                               env.action_space.n])
-
-    def quantize_state(self, state):
-        """ Converts a state to quantized data """
-        state = np.array(list(state.values()))
-        state[1:4] = quantizer.transform([state[1:4]])[0]
-        return (state)
-
-    def update(self, s, a, r, sp, upd, disc):
-        """ Updates the policy table """
-        s_q = self.quantize_state(s)
-        sp_q = self.quantize_state(sp)
-
-        # Gets Values
-        old_est = self.q_val[s_q[0], s_q[1], s_q[2], s_q[3], a]
-        next_est = np.max(self.q_val[sp_q[0], sp_q[1], sp_q[2], sp_q[3]])
-
-        # Updates
-        self.q_val[s_q[0], s_q[1], s_q[2], s_q[3]] = (1-upd) * old_est + upd * (r + disc * next_est - old_est)
-
-    def get_action(self, state):
-        """ Gets the action of the estimator """
-        state_q = self.quantize_state(state)
-        action = np.argmax(self.q_val[state_q[0], state_q[1],
-                                      state_q[2], state_q[3]])
-        return action
 
 
 class QL_func_estimator():
@@ -230,14 +254,14 @@ class QL_func_estimator():
             # self.Y_tr[a] = []
 
             idx = np.random.randint(len(self.X_tr[a]), size=int(len(self.X_tr[a]) * (1-upd)))
-            self.X_tr[a] = np.array(self.X_tr[a] )
-            self.Y_tr[a] = np.array(self.Y_tr[a] )
+            self.X_tr[a] = np.array(self.X_tr[a])
+            self.Y_tr[a] = np.array(self.Y_tr[a])
 
             self.X_tr[a] = self.X_tr[a][idx]
             self.Y_tr[a] = self.Y_tr[a][idx]
 
-            self.X_tr[a] = list(self.X_tr[a] )
-            self.Y_tr[a] = list(self.Y_tr[a] )
+            self.X_tr[a] = list(self.X_tr[a])
+            self.Y_tr[a] = list(self.Y_tr[a])
 
     def get_action(self, observation):
         """Returns the best action given the current policy value"""
@@ -246,87 +270,43 @@ class QL_func_estimator():
         return best_action
 
 
-#%%
+# %%
 if __name__ == '__main__':
 
     # %% Reinforcement Learning
-    # #### NAIVE Q LEARNING #####
-    # # Setup
-    # env = MarkdownEnv(PROB_DATA)
-
-    # # Prepare Transformation Pipelines
-    # sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
-    # quantizer = sklearn.preprocessing.KBinsDiscretizer(n_bins=10, encode='ordinal')
-    # quantizer.fit(sample_vals[:, 1:4])
-
-    # # Policy Estimator
-    # ql_est = QL_est(env, quantizer)
-
-    # # Optimization
-    # rewards = []
-    # exp = 0.5
-    # disc = 0.95
-    # upd = 0.05
-    # epochs = 100000
-    # for i in tqdm(range(epochs)):
-
-    #     state = env.reset()
-    #     terminated = False
-
-    #     while not terminated:
-
-    #         # Exploration
-    #         if np.random.uniform(0, 1) < exp:
-    #             action = env.action_space.sample()
-    #         # Exploitation
-    #         else:
-    #             action = ql_est.get_action(state)
-
-    #         # Updates Policy
-    #         new_state, reward, terminated, _ = env.step(action)
-    #         ql_est.update(state, action, reward, new_state, upd, disc)
-
-    #         # Update State
-    #         state = new_state
-
-    #     rewards.append(reward)
-
-    # rew_ma = pd.DataFrame(rewards).rolling(int(epochs*0.02)).mean()
-    # fig = px.line(rew_ma)
-    # fig.update_traces(line={'width': 1})
-    # fig.show(renderer='browser')
-
-    # %%
     ##### APPROXIMATION Q LEARNING #####
     # Setup
     env = MarkdownEnv(PROB_DATA)
     _action_to_price = {0: 60, 1: 54, 2: 48, 3: 36, }
     _price_to_action = {60: 0, 54: 1, 48: 2, 36: 3}
 
+    # Generate Sample Data
+    sample_vals = []
+    for i in tqdm(range(10000)):
+        state = env.reset()
+        sample_vals.append(list(state.values()))
+        terminated = False
+        while not terminated:
+            action = env.action_space.sample()
+            state, reward, terminated, _ = env.step(action)
+            sample_vals.append(list(state.values()))
+    sample_vals = np.array(sample_vals)
+    sample_vals.shape
+
     # Prepare Transformation Pipelines
-    sample_vals = np.array([list(env.state_space.sample().values()) for x in range(100000)])
-    cat_pipe = Pipeline([ 
-        ('encode', sklearn.preprocessing.OneHotEncoder(drop='first')) 
-    ])
-    num_pipe = Pipeline([ 
-        ('transform', sklearn.preprocessing.RobustScaler()), 
-    ])
-    pre_pipe = ColumnTransformer([ 
-        ("categorical", cat_pipe, [0]),
-        ("numerical", num_pipe, [1,2,3]),
-    ])
-    feature_pipe = Pipeline([ 
-        ('polynomial_features', sklearn.preprocessing.PolynomialFeatures()) 
-    ])
-    full_pipe = Pipeline([ 
-        ('preprocessing', pre_pipe),
-        ('transformation', feature_pipe) 
-    ])
+    cat_pipe = Pipeline([('encode', sklearn.preprocessing.OneHotEncoder(drop='first'))])
+    num_pipe = Pipeline([('transform', sklearn.preprocessing.RobustScaler()), ])
+    pre_pipe = ColumnTransformer([("categorical", cat_pipe, [1]),
+                                  ("numerical", num_pipe, [i for i in range(32) if i != 1]), ])
+    feature_pipe = Pipeline([('polynomial_features', sklearn.preprocessing.PolynomialFeatures(interaction_only=True))])
+    full_pipe = Pipeline([('preprocessing', pre_pipe),
+                          #   ('transformation', feature_pipe),
+                          ])
     full_pipe.fit(sample_vals)
 
     # Policy Estimator
-    qlf_est = QL_func_estimator(env, full_pipe, Ridge)
-    export_file = 'rl_approx_ridge_tr'
+    qlf_est = QL_func_estimator(env, full_pipe, GradientBoostingRegressor)
+    export_file = 'rl_approx_gbr_notr'
 
     # Optimization
     rewards_epoch = []
@@ -360,7 +340,6 @@ if __name__ == '__main__':
 
                 # Update State
                 state = new_state
-                
 
             rewards_mb.append(reward)
             rewards_all.append(reward)
@@ -373,7 +352,6 @@ if __name__ == '__main__':
         with open(f'data/{export_file}_{i+1}.pkl', 'wb') as outp:
             pickle.dump(qlf_est, outp, pickle.HIGHEST_PROTOCOL)
         qlf_est.update(upd)
-
 
     # %%
     # fig = px.line(rewards_epoch)

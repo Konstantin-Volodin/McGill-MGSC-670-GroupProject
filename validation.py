@@ -35,13 +35,13 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_price': 60,
              'total_duration': 15}
 
-with open('data/rl_approx_160.pkl', 'rb') as inp:
+with open('data/rl_approx_ada_notr_17.pkl', 'rb') as inp:
     RL_APPROX = pickle.load(inp)
 
 # %%
 # VALIDATION
 res = {'seed': [], 'revenue': [], 'perf_revenue': [], 'difference': [], 'policy': [], 'param': []}
-for i in tqdm(range(20)):
+for i in tqdm(range(10)):
 
     # BASELINE POLICY
     ind_res = validator(PROB_DATA, i, baseline_policy, kwargs={})
@@ -89,7 +89,7 @@ for i in tqdm(range(20)):
     res['param'].append(0.04)
 
     # SHARED LIKELIHOOD POLICY
-    ind_res = validator(PROB_DATA, i, likelihood_shared_distribution, 
+    ind_res = validator(PROB_DATA, i, likelihood_shared_distribution,
                         kwargs={'req_likelihood': 0.03, 'mean_dependency': MEAN_DEPENDENCY, 'sd_dependency': SD_DEPENDENCY})
     res['seed'].append(i)
     res['revenue'].append(ind_res[0])
@@ -118,7 +118,7 @@ for i in tqdm(range(20)):
 
 
 res = pd.DataFrame(res)
-res.to_csv('data/validation_result.csv', index = False)
+res.to_csv('data/validation_result.csv', index=False)
 
 
 # %%
@@ -126,12 +126,12 @@ res.to_csv('data/validation_result.csv', index = False)
 fig = px.box(res, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-# pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
+pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
 
 # DIFFERENCE DISTRIBUTION
 fig = px.box(res, y='difference', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-# pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
+pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
 
 # %%
