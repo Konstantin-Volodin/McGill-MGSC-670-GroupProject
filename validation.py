@@ -8,8 +8,10 @@ import plotly.figure_factory as ff
 import plotly.io as pio
 from tqdm import tqdm
 import pickle
-from rl import QL_func_estimator
+from rl import QlFuncEstimator, FNN 
+np.seterr(all="ignore")
 
+np.seterr(all="ignore")
 from modules.funcs import (validator,
                            clean_up_relevant_data,
                            get_price_dependency)
@@ -35,7 +37,7 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_price': 60,
              'total_duration': 15}
 
-with open('data/rl_approx_ada_notr_17.pkl', 'rb') as inp:
+with open('data/rl_approx_nn_tr_76.pkl', 'rb') as inp:
     RL_APPROX = pickle.load(inp)
 
 # %%
@@ -113,7 +115,7 @@ for i in tqdm(range(10)):
     res['revenue'].append(ind_res[0])
     res['perf_revenue'].append(ind_res[1])
     res['difference'].append(ind_res[2])
-    res['policy'].append('rl_policy')
+    res['policy'].append(f'rl_policy')
     res['param'].append('none')
 
 
@@ -126,12 +128,12 @@ res.to_csv('data/validation_result.csv', index=False)
 fig = px.box(res, y='revenue', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
+# pio.write_image(fig, 'images/validation_revenue_distribution_box.png', scale=1, width=1800, height=900)
 
 # DIFFERENCE DISTRIBUTION
 fig = px.box(res, y='difference', facet_col='policy', color='policy',
              boxmode='overlay', points='all')
 fig.show(renderer='browser')
-pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
+# pio.write_image(fig, 'images/validation_difference_distribution_box.png', scale=1, width=1800, height=900)
 
 # %%

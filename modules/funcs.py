@@ -4,6 +4,8 @@ import itertools
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def clean_up_relevant_data(df):
@@ -91,7 +93,8 @@ def validator(problem_dat, seed, policy, **kwargs):
 
     # Open website
     url = "http://www.randhawa.us/games/retailer/nyu.html"
-    driver = webdriver.Firefox()
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    # driver = webdriver.Firefox()
     driver.get(url)
     driver.find_element(By.ID, "seedUser").send_keys(seed)
 
@@ -139,5 +142,5 @@ def validator(problem_dat, seed, policy, **kwargs):
     perf_rev = int(driver.find_element(By.ID, 'perfect').text[1:].replace(',', ''))
     diff_rev = (perf_rev - tot_rev)/perf_rev
 
-    driver.close()
+    # driver.close()
     return (tot_rev, perf_rev, diff_rev)

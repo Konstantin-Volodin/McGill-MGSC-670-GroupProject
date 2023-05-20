@@ -228,44 +228,27 @@ def rl_policy(problem_dat, actions, sales, prices, **kwargs):
     rl_model = kwargs['kwargs']['rl_object']
 
     # Change the data
-    state = {"total_sales": np.sum(sales),
-             "week": len(sales)-1,
-             "week0_price": _price_to_action[prices[0]] if len(prices) > 0 else -1,
+    state = {"week": len(sales)-1,
+             "curr_price": _price_to_action[prices[-1]],
+             "sales_total": np.sum(sales),
+             "sales_mean": np.mean(sales),
+             "sales_sd": np.std(sales),
              "week0_sales": sales[0] if len(sales) > 0 else -1,
-             "week10_price": _price_to_action[prices[10]] if len(prices) > 10 else -1,
-             "week10_sales": sales[10] if len(sales) > 10 else -1,
-             "week11_price": _price_to_action[prices[11]] if len(prices) > 11 else -1,
-             "week11_sales": sales[11] if len(sales) > 11 else -1,
-             "week12_price": _price_to_action[prices[12]] if len(prices) > 12 else -1,
-             "week12_sales": sales[12] if len(sales) > 12 else -1,
-             "week13_price": _price_to_action[prices[13]] if len(prices) > 13 else -1,
-             "week13_sales": sales[13] if len(sales) > 13 else -1,
-             "week14_price": _price_to_action[prices[14]] if len(prices) > 14 else -1,
-             "week14_sales": sales[14] if len(sales) > 14 else -1,
-             "week1_price": _price_to_action[prices[1]] if len(prices) > 1 else -1,
              "week1_sales": sales[1] if len(sales) > 1 else -1,
-             "week2_price": _price_to_action[prices[2]] if len(prices) > 2 else -1,
              "week2_sales": sales[2] if len(sales) > 2 else -1,
-             "week3_price": _price_to_action[prices[3]] if len(prices) > 3 else -1,
              "week3_sales": sales[3] if len(sales) > 3 else -1,
-             "week4_price": _price_to_action[prices[4]] if len(prices) > 4 else -1,
              "week4_sales": sales[4] if len(sales) > 4 else -1,
-             "week5_price": _price_to_action[prices[5]] if len(prices) > 5 else -1,
              "week5_sales": sales[5] if len(sales) > 5 else -1,
-             "week6_price": _price_to_action[prices[6]] if len(prices) > 6 else -1,
              "week6_sales": sales[6] if len(sales) > 6 else -1,
-             "week7_price": _price_to_action[prices[7]] if len(prices) > 7 else -1,
              "week7_sales": sales[7] if len(sales) > 7 else -1,
-             "week8_price": _price_to_action[prices[8]] if len(prices) > 8 else -1,
              "week8_sales": sales[8] if len(sales) > 8 else -1,
-             "week9_price": _price_to_action[prices[9]] if len(prices) > 9 else -1,
              "week9_sales": sales[9] if len(sales) > 9 else -1,
-             }
-
-    # state = {'curr_price': _price_to_action[prices[-1]],
-    #          'curr_sales': sales[-1],
-    #          'tot_sales': np.sum(sales),
-    #          'week': len(prices)}
+             "week10_sales": sales[10] if len(sales) > 10 else -1,
+             "week11_sales": sales[11] if len(sales) > 11 else -1,
+             "week12_sales": sales[12] if len(sales) > 12 else -1,
+             "week13_sales": sales[13] if len(sales) > 13 else -1,
+             "week14_sales": sales[14] if len(sales) > 14 else -1,
+        }
 
     # Get Action
     action = rl_model.get_action(state)

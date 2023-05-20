@@ -8,7 +8,9 @@ import plotly.figure_factory as ff
 import plotly.io as pio
 from tqdm import tqdm
 import pickle
-from rl import QL_func_estimator
+from rl import QlFuncEstimator, FNN
+np.seterr(all="ignore")
+
 
 from modules.funcs import (simulator,
                            clean_up_relevant_data,
@@ -36,16 +38,24 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'total_duration': 15}
 
 # GET VARIOUS RL POLICIES
-policies = {'ada_notr': 130,
-            'ridge_notr': 500,
-            'ridge_tr': 500,
-            'ada_tr': 50}
+policies = {
+            # 'nn_notr': 4700,
+            'nn_tr': 2300,
+            # 'sgd_notr': 80,
+            # 'sgd_tr': 50,
+            # 'gbr_notr': 69,
+            # 'gbr_tr': 47,
+            # 'ada_notr': 64,
+            # 'ada_tr': 45,
+            }
+
+
 # %%
-best_pols = []
+best_pols = ['nn_tr_2327']
 for k, v in policies.items():
     print(k)
     reward = []
-    for i in range(v):
+    for i in tqdm(range(v)):
         with open(f'data/rl_approx_{k}_{i+1}.pkl', 'rb') as inp:
             reward.append(pickle.load(inp).rev)
 
@@ -54,14 +64,13 @@ for k, v in policies.items():
 
     best_pols.append(f"{k}_{ma_best}")
     best_pols.append(f"{k}_{best}")
-best_pols
-# %%
+
+print(best_pols)
 best_pols = list(set(best_pols))
 best_pols_obj = {}
 for pol in best_pols:
     with open(f'data/rl_approx_{pol}.pkl', 'rb') as inp:
         best_pols_obj[pol] = pickle.load(inp)
-
 
 # %%
 # SIMULATION
@@ -168,7 +177,10 @@ res_agg = res.groupby(['policy', 'param', 'repl']).agg({'revenue': 'sum'}).reset
 res_agg = res_agg.groupby(['policy', 'param']).agg({'revenue': ['mean', 'std']}).reset_index()
 res_agg.columns = ['policy', 'param', 'revenue_mean', 'revenue_sd']
 res_agg.sort_values('revenue_mean')
-res_agg.loc[res_agg.groupby('policy')['revenue_mean'].idxmax()]
+print(res_agg.loc[res_agg.groupby('policy')['revenue_mean'].idxmax()])
+
+#%%
+print(res_agg.query('policy == "reinforcement_learning"'))
 
 # %% Clean Up Results
 res_baseline = res.query(f'policy == "baseline"')
@@ -192,7 +204,7 @@ res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['reve
 res_random = res.query(f'policy == "random"')
 res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_rl = res.query(f'policy == "reinforcement_learning" and param == "ridge_notr_309"')
+res_rl = res.query(f'policy == "reinforcement_learning" and param == "nn_tr_420"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_all = pd.concat([res_baseline,
@@ -284,4 +296,4 @@ fig.show(renderer='browser')
 # Revenue Distribution - Table
 res_rev_all.groupby(['policy']).agg({'revenue': ['mean', 'std']}).sort_values(by=('revenue', 'mean'), ascending=False).reset_index()
 
-# %%
+ # %%
