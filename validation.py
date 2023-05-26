@@ -37,7 +37,7 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
              'start_price': 60,
              'total_duration': 15}
 
-with open('data/rl_approx_nn_tr_76.pkl', 'rb') as inp:
+with open('data/rl_approx_nn_tr_2475.pkl', 'rb') as inp:
     RL_APPROX = pickle.load(inp)
 
 # %%

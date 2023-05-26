@@ -40,7 +40,7 @@ PROB_DATA = {'actions': {60: [60, 54, 48, 36],
 # GET VARIOUS RL POLICIES
 policies = {
             # 'nn_notr': 4700,
-            'nn_tr': 2300,
+            'nn_tr': 4500,
             # 'sgd_notr': 80,
             # 'sgd_tr': 50,
             # 'gbr_notr': 69,
@@ -51,7 +51,7 @@ policies = {
 
 
 # %%
-best_pols = ['nn_tr_2327']
+best_pols = ['nn_tr_4500']
 for k, v in policies.items():
     print(k)
     reward = []
@@ -204,7 +204,7 @@ res_likelihood_price['cum_revenue'] = res_likelihood_price.groupby('repl')['reve
 res_random = res.query(f'policy == "random"')
 res_random['cum_revenue'] = res_random.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
-res_rl = res.query(f'policy == "reinforcement_learning" and param == "nn_tr_420"')
+res_rl = res.query(f'policy == "reinforcement_learning" and param == "nn_tr_2475"')
 res_rl['cum_revenue'] = res_rl.groupby('repl')['revenue'].transform(pd.Series.cumsum)
 
 res_all = pd.concat([res_baseline,
