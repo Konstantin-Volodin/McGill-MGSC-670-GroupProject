@@ -1,0 +1,42 @@
+\begin{thebibliography}{}
+
+\bibitem[Baker et~al., 2019]{baker2019emergent}
+Baker, B., Kanitscheider, I., Markov, T., Wu, Y., Powell, G., McGrew, B., and Mordatch, I. (2019).
+\newblock Emergent tool use from multi-agent autocurricula.
+\newblock {\em arXiv preprint arXiv:1909.07528}.
+
+\bibitem[Bitran and Pedrosa, 1998]{bitran1998structured}
+Bitran, G. and Pedrosa, L. (1998).
+\newblock A structured product development perspective for service operations.
+\newblock {\em European Management Journal}, 16(2):169--189.
+
+\bibitem[Caro and Gallien, 2012]{caro2012clearance}
+Caro, F. and Gallien, J. (2012).
+\newblock Clearance pricing optimization for a fast-fashion retailer.
+\newblock {\em Operations research}, 60(6):1404--1422.
+
+\bibitem[Chung et~al., 2015]{chung2015optimal}
+Chung, W., Talluri, S., and Narasimhan, R. (2015).
+\newblock Optimal pricing and inventory strategies with multiple price markdowns over time.
+\newblock {\em European Journal of Operational Research}, 243(1):130--141.
+
+\bibitem[Feng and Gallego, 2000]{feng2000perishable}
+Feng, Y. and Gallego, G. (2000).
+\newblock Perishable asset revenue management with markovian time dependent demand intensities.
+\newblock {\em Management science}, 46(7):941--956.
+
+\bibitem[Gallego and Van~Ryzin, 1994]{gallego1994optimal}
+Gallego, G. and Van~Ryzin, G. (1994).
+\newblock Optimal dynamic pricing of inventories with stochastic demand over finite horizons.
+\newblock {\em Management science}, 40(8):999--1020.
+
+\bibitem[Randhawa, 2014]{RetailerGame}
+Randhawa, R.~S. (2014).
+\newblock Retailer game.
+
+\bibitem[Talluri and Van~Ryzin, 2004]{talluri2004revenue}
+Talluri, K. and Van~Ryzin, G. (2004).
+\newblock Revenue management under a general discrete choice model of consumer behavior.
+\newblock {\em Management Science}, 50(1):15--33.
+
+\end{thebibliography}
